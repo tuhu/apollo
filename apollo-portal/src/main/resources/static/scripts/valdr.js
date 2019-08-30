@@ -7,7 +7,7 @@ function appValdr(valdrProvider) {
                                          'appId': {
                                              'size': {
                                                  'max': 64,
-                                                 'message': 'AppId长度不能多于32个字符'
+                                                 'message': 'AppId长度不能多于64个字符'
                                              },
                                              'required': {
                                                  'message': 'AppId不能为空'
