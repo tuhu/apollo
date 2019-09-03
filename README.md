@@ -1,3 +1,6 @@
+## 定制修改
+1. [AppId长度改成64](https://github.com/tuhu/apollo/pull/1/files)
+
 <img src="https://raw.githubusercontent.com/ctripcorp/apollo/master/doc/images/logo/logo-simple.png" alt="apollo-logo" width="60%">
 
 # Apollo - A reliable configuration management system
