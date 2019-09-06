@@ -1,5 +1,5 @@
-## 定制修改
-1. [AppId长度改成64](https://github.com/tuhu/apollo/pull/1/files)
+# 定制修改
+1. [AppId长度改成64](https://github.com/tuhu/apollo/pull/1/files)（途虎定义的AppId长度是63，apollo原来的AppId长度是32，为了兼容需要将长度改为64）
 
 <img src="https://raw.githubusercontent.com/ctripcorp/apollo/master/doc/images/logo/logo-simple.png" alt="apollo-logo" width="60%">
 
