@@ -5,15 +5,13 @@ import com.ctrip.framework.apollo.core.dto.ApolloConfig;
 import com.ctrip.framework.apollo.core.dto.ApolloConfigNotification;
 import com.ctrip.framework.apollo.core.utils.ResourceUtils;
 import com.ctrip.framework.apollo.internals.ConfigServiceLocator;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -39,8 +37,8 @@ public class EmbeddedApollo extends ExternalResource {
   private static ConfigServiceLocator CONFIG_SERVICE_LOCATOR;
 
   private final Gson gson = new Gson();
-  private final Map<String, Map<String, String>> addedOrModifiedPropertiesOfNamespace = new HashMap<>();
-  private final Map<String, Set<String>> deletedKeysOfNamespace = new HashMap<>();
+  private final Map<String, Map<String, String>> addedOrModifiedPropertiesOfNamespace = Maps.newConcurrentMap();
+  private final Map<String, Set<String>> deletedKeysOfNamespace = Maps.newConcurrentMap();
 
   private MockWebServer server;
 
@@ -65,7 +63,8 @@ public class EmbeddedApollo extends ExternalResource {
         if (request.getPath().startsWith("/notifications/v2")) {
           String notifications = request.getRequestUrl().queryParameter("notifications");
           return new MockResponse().setResponseCode(200).setBody(mockLongPollBody(notifications));
-        } else if (request.getPath().startsWith("/configs")) {
+        }
+        if (request.getPath().startsWith("/configs")) {
           List<String> pathSegments = request.getRequestUrl().pathSegments();
           // appId and cluster might be used in the future
           String appId = pathSegments.get(1);
@@ -151,7 +150,7 @@ public class EmbeddedApollo extends ExternalResource {
     if (addedOrModifiedPropertiesOfNamespace.containsKey(namespace)) {
       addedOrModifiedPropertiesOfNamespace.get(namespace).put(someKey, someValue);
     } else {
-      Map<String, String> m = new HashMap<>();
+      Map<String, String> m = Maps.newConcurrentMap();
       m.put(someKey, someValue);
       addedOrModifiedPropertiesOfNamespace.put(namespace, m);
     }
@@ -164,7 +163,9 @@ public class EmbeddedApollo extends ExternalResource {
     if (deletedKeysOfNamespace.containsKey(namespace)) {
       deletedKeysOfNamespace.get(namespace).add(someKey);
     } else {
-      deletedKeysOfNamespace.put(namespace, ImmutableSet.of(someKey));
+      Set<String> m = Sets.newConcurrentHashSet();
+      m.add(someKey);
+      deletedKeysOfNamespace.put(namespace, m);
     }
   }
 

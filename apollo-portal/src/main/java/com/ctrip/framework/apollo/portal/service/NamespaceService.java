@@ -8,7 +8,6 @@ import com.ctrip.framework.apollo.common.entity.AppNamespace;
 import com.ctrip.framework.apollo.common.exception.BadRequestException;
 import com.ctrip.framework.apollo.common.utils.BeanUtils;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
-import com.ctrip.framework.apollo.core.enums.Env;
 import com.ctrip.framework.apollo.core.utils.StringUtils;
 import com.ctrip.framework.apollo.portal.api.AdminServiceAPI;
 import com.ctrip.framework.apollo.portal.component.PortalSettings;
@@ -17,23 +16,20 @@ import com.ctrip.framework.apollo.portal.constant.RoleType;
 import com.ctrip.framework.apollo.portal.constant.TracerEventType;
 import com.ctrip.framework.apollo.portal.entity.bo.ItemBO;
 import com.ctrip.framework.apollo.portal.entity.bo.NamespaceBO;
+import com.ctrip.framework.apollo.portal.environment.Env;
 import com.ctrip.framework.apollo.portal.spi.UserInfoHolder;
 import com.ctrip.framework.apollo.portal.util.RoleUtils;
 import com.ctrip.framework.apollo.tracer.Tracer;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 @Service
 public class NamespaceService {
@@ -126,7 +122,7 @@ public class NamespaceService {
       String namespaceName) {
     NamespaceDTO namespace = namespaceAPI.loadNamespace(appId, env, clusterName, namespaceName);
     if (namespace == null) {
-      throw new BadRequestException("namespaces not exist");
+      throw new BadRequestException(String.format("Namespace: %s not exist.", namespaceName));
     }
     return namespace;
   }
@@ -224,6 +220,7 @@ public class NamespaceService {
     //latest Release
     ReleaseDTO latestRelease;
     Map<String, String> releaseItems = new HashMap<>();
+    Map<String, ItemDTO> deletedItemDTOs = new HashMap<>();
     latestRelease = releaseService.loadLatestRelease(appId, env, clusterName, namespaceName);
     if (latestRelease != null) {
       releaseItems = gson.fromJson(latestRelease.getConfigurations(), GsonType.CONFIG);
@@ -244,7 +241,11 @@ public class NamespaceService {
     }
 
     //deleted items
-    List<ItemBO> deletedItems = parseDeletedItems(items, releaseItems);
+    itemService.findDeletedItems(appId, env, clusterName, namespaceName).forEach(item -> {
+      deletedItemDTOs.put(item.getKey(),item);
+    });
+
+    List<ItemBO> deletedItems = parseDeletedItems(items, releaseItems, deletedItemDTOs);
     itemBOs.addAll(deletedItems);
     modifiedItemCnt += deletedItems.size();
 
@@ -255,20 +256,24 @@ public class NamespaceService {
 
   private void fillAppNamespaceProperties(NamespaceBO namespace) {
 
-    NamespaceDTO namespaceDTO = namespace.getBaseInfo();
+    final NamespaceDTO namespaceDTO = namespace.getBaseInfo();
+    final String appId = namespaceDTO.getAppId();
+    final String clusterName = namespaceDTO.getClusterName();
+    final String namespaceName = namespaceDTO.getNamespaceName();
     //先从当前appId下面找,包含私有的和公共的
     AppNamespace appNamespace =
         appNamespaceService
-            .findByAppIdAndName(namespaceDTO.getAppId(), namespaceDTO.getNamespaceName());
+            .findByAppIdAndName(appId, namespaceName);
     //再从公共的app namespace里面找
     if (appNamespace == null) {
-      appNamespace = appNamespaceService.findPublicAppNamespace(namespaceDTO.getNamespaceName());
+      appNamespace = appNamespaceService.findPublicAppNamespace(namespaceName);
     }
 
-    String format;
-    boolean isPublic;
+    final String format;
+    final boolean isPublic;
     if (appNamespace == null) {
       //dirty data
+      logger.warn("Dirty data, cannot find appNamespace by namespaceName [{}], appId = {}, cluster = {}, set it format to {}, make public", namespaceName, appId, clusterName, ConfigFileFormat.Properties.getValue());
       format = ConfigFileFormat.Properties.getValue();
       isPublic = true; // set to true, because public namespace allowed to delete by user
     } else {
@@ -281,7 +286,7 @@ public class NamespaceService {
     namespace.setPublic(isPublic);
   }
 
-  private List<ItemBO> parseDeletedItems(List<ItemDTO> newItems, Map<String, String> releaseItems) {
+  private List<ItemBO> parseDeletedItems(List<ItemDTO> newItems, Map<String, String> releaseItems, Map<String, ItemDTO> deletedItemDTOs) {
     Map<String, ItemDTO> newItemMap = BeanUtils.mapByKey("key", newItems);
 
     List<ItemBO> deletedItems = new LinkedList<>();
@@ -291,7 +296,7 @@ public class NamespaceService {
         ItemBO deletedItem = new ItemBO();
 
         deletedItem.setDeleted(true);
-        ItemDTO deletedItemDto = new ItemDTO();
+        ItemDTO deletedItemDto = deletedItemDTOs.computeIfAbsent(key, k -> new ItemDTO());
         deletedItemDto.setKey(key);
         String oldValue = entry.getValue();
         deletedItem.setItem(deletedItemDto);

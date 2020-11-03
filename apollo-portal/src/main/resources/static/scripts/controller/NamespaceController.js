@@ -62,9 +62,16 @@ namespace_module.controller("LinkNamespaceController",
                 if (!$scope.appBaseInfo) {
                     return '';
                 }
-                return $scope.appBaseInfo.namespacePrefix +
-                    ($scope.appNamespace.name ? $scope.appNamespace.name : '');
+                var appNamespaceName = $scope.appNamespace.name ? $scope.appNamespace.name : '';
+                if (shouldAppendNamespacePrefix()) {
+                    return $scope.appBaseInfo.namespacePrefix + appNamespaceName;
+                }
+                return appNamespaceName;
             };
+
+            function shouldAppendNamespacePrefix() {
+                 return $scope.appNamespace.isPublic ? $scope.appendNamespacePrefix : false;
+            }
 
             var selectedClusters = [];
             $scope.collectSelectedClusters = function (data) {
@@ -107,7 +114,7 @@ namespace_module.controller("LinkNamespaceController",
                             setInterval(function () {
                                 $scope.submitBtnDisabled = false;
                                 $window.location.href =
-                                    '/namespace/role.html?#appid=' + $scope.appId
+                                AppUtil.prefixPath() + '/namespace/role.html?#appid=' + $scope.appId
                                     + "&namespaceName=" + $scope.namespaceName;
                             }, 1000);
                         }, function (result) {
@@ -126,16 +133,21 @@ namespace_module.controller("LinkNamespaceController",
                         return;
                     }
 
+                    // public namespaces only allow properties format
+                    if ($scope.appNamespace.isPublic) {
+                        $scope.appNamespace.format = 'properties';
+                    }
+
                     $scope.submitBtnDisabled = true;
                     //only append namespace prefix for public app namespace
-                    var appendNamespacePrefix = $scope.appNamespace.isPublic ? $scope.appendNamespacePrefix : false;
+                    var appendNamespacePrefix = shouldAppendNamespacePrefix();
                     NamespaceService.createAppNamespace($scope.appId, $scope.appNamespace, appendNamespacePrefix).then(
                         function (result) {
                             $scope.step = 2;
                             setTimeout(function () {
                                 $scope.submitBtnDisabled = false;
                                 $window.location.href =
-                                    "/namespace/role.html?#/appid=" + $scope.appId
+                                AppUtil.prefixPath() + "/namespace/role.html?#/appid=" + $scope.appId
                                     + "&namespaceName=" + result.name;
                             }, 1000);
                         }, function (result) {
@@ -152,7 +164,7 @@ namespace_module.controller("LinkNamespaceController",
             };
 
             $scope.back = function () {
-                $window.location.href = '/config.html?#appid=' + $scope.appId;
+                $window.location.href = AppUtil.prefixPath() + '/config.html?#appid=' + $scope.appId;
             };
 
             $scope.switchType = function (type) {

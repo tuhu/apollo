@@ -1,11 +1,19 @@
+var prefixPath = window.localStorage.getItem("prefixPath") || "";
+
 /**utils*/
 var appUtil = angular.module('app.util', ['toastr', 'ngCookies', 'pascalprecht.translate'])
-    .config(['$translateProvider', function ($translateProvider) {
+    .constant("prefixLocation", prefixPath)      // 前缀路径
+    .filter('prefixPath',['prefixLocation', function(prefixLocation) {   // 前缀路径过滤器
+        return function(text) {
+            return prefixLocation + text;
+        }
+    }])
+    .config(['$translateProvider','prefixLocation', function ($translateProvider,prefixLocation) {
 
         $translateProvider.useSanitizeValueStrategy(null); // disable sanitization by default
         $translateProvider.useCookieStorage();
         $translateProvider.useStaticFilesLoader({
-            prefix: '/i18n/',
+            prefix: prefixLocation + '/i18n/',
             suffix: '.json'
         });
         $translateProvider.registerAvailableLanguageKeys(['en', 'zh-CN'], {
@@ -16,6 +24,8 @@ var appUtil = angular.module('app.util', ['toastr', 'ngCookies', 'pascalprecht.t
                             })
         $translateProvider.uniformLanguageTag('bcp47').determinePreferredLanguage();
     }]);
+
+
 /**service module 定义*/
 var appService = angular.module('app.service', ['ngResource', 'app.util'])
 
@@ -56,3 +66,7 @@ var login_module = angular.module('login', ['app.service', 'toastr', 'app.util',
 var delete_app_cluster_namespace_module = angular.module('delete_app_cluster_namespace', ['app.service', 'apollo.directive', 'app.util', 'toastr', 'angular-loading-bar']);
 //system info
 var system_info_module = angular.module('system_info', ['app.service', 'apollo.directive', 'app.util', 'toastr', 'angular-loading-bar']);
+//access secretKey
+var access_key_module = angular.module('access_key', ['app.service', 'apollo.directive', 'app.util', 'toastr', 'angular-loading-bar']);
+//config export
+var config_export_module = angular.module('config_export', ['app.service', 'apollo.directive', 'app.util', 'toastr', 'angular-loading-bar']);

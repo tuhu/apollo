@@ -242,7 +242,7 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-lg-12">
-                            <form id="login-form" action="/signin" method="post" role="form" style="display: block;">
+                            <form id="login-form" action="signin" method="post" role="form" style="display: block;">
                                 <p class="text-center"><img src="img/logo-detail.png" style="width: 500px;"></p>
                                 <div class="form-group">
                                     <input type="text" name="username" tabindex="1" class="form-control"
@@ -290,6 +290,7 @@
 
 
 <script type="application/javascript">
+
     $(function () {
         $('#login-form-link').click(function (e) {
             $("#login-form").delay(100).fadeIn(100);
@@ -304,6 +305,10 @@
             $('#login-form-link').removeClass('active');
             $(this).addClass('active');
             e.preventDefault();
+        });
+
+        $.get("prefix-path", function(result){
+            window.localStorage.setItem("prefixPath",result);
         });
 
     });

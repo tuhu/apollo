@@ -14,6 +14,7 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * @author Jason Song(song_s@ctrip.com)
@@ -78,6 +79,13 @@ public class HttpUtil {
 
       conn.setRequestMethod("GET");
 
+      Map<String, String> headers = httpRequest.getHeaders();
+      if (headers != null && headers.size() > 0) {
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+          conn.setRequestProperty(entry.getKey(), entry.getValue());
+        }
+      }
+
       int connectTimeout = httpRequest.getConnectTimeout();
       if (connectTimeout < 0) {
         connectTimeout = m_configUtil.getConnectTimeout();
@@ -119,10 +127,9 @@ public class HttpUtil {
         // 200 and 304 should not trigger IOException, thus we must throw the original exception out
         if (statusCode == 200 || statusCode == 304) {
           throw ex;
-        } else {
-          // for status codes like 404, IOException is expected when calling conn.getInputStream()
-          throw new ApolloConfigStatusCodeException(statusCode, ex);
         }
+        // for status codes like 404, IOException is expected when calling conn.getInputStream()
+        throw new ApolloConfigStatusCodeException(statusCode, ex);
       }
 
       if (statusCode == 200) {

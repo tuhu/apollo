@@ -1,4 +1,4 @@
-appUtil.service('AppUtil', ['toastr', '$window', '$q', '$translate', function (toastr, $window, $q, $translate) {
+appUtil.service('AppUtil', ['toastr', '$window', '$q', '$translate', 'prefixLocation', function (toastr, $window, $q, $translate, prefixLocation) {
 
     function parseErrorMsg(response) {
         if (response.status == -1) {
@@ -43,6 +43,9 @@ appUtil.service('AppUtil', ['toastr', '$window', '$q', '$translate', function (t
     }
 
     return {
+        prefixPath: function(){
+            return prefixLocation;
+        },
         errorMsg: parseErrorMsg,
         pureErrorMsg: parsePureErrorMsg,
         ajax: ajax,
@@ -53,7 +56,7 @@ appUtil.service('AppUtil', ['toastr', '$window', '$q', '$translate', function (t
             if (!query) {
                 //如果不传这个参数或者false则返回到首页(参数出错)
                 if (!notJumpToHomePage) {
-                    $window.location.href = '/index.html';
+                    $window.location.href = prefixLocation + '/index.html';
                 } else {
                     return {};
                 }

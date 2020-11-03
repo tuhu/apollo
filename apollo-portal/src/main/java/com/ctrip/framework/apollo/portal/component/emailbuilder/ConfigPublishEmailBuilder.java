@@ -8,7 +8,7 @@ import com.ctrip.framework.apollo.common.constants.ReleaseOperationContext;
 import com.ctrip.framework.apollo.common.dto.ReleaseDTO;
 import com.ctrip.framework.apollo.common.entity.AppNamespace;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
-import com.ctrip.framework.apollo.core.enums.Env;
+import com.ctrip.framework.apollo.portal.environment.Env;
 import com.ctrip.framework.apollo.portal.component.config.PortalConfig;
 import com.ctrip.framework.apollo.portal.constant.RoleType;
 import com.ctrip.framework.apollo.portal.entity.bo.Email;
@@ -144,7 +144,7 @@ public abstract class ConfigPublishEmailBuilder {
             renderResult.replaceAll(EMAIL_CONTENT_FIELD_RELEASE_ID, String.valueOf(releaseHistory.getReleaseId()));
     renderResult =
             renderResult.replaceAll(EMAIL_CONTENT_FIELD_RELEASE_HISTORY_ID, String.valueOf(releaseHistory.getId()));
-    renderResult = renderResult.replaceAll(EMAIL_CONTENT_FIELD_RELEASE_COMMENT, Matcher.quoteReplacement(releaseHistory.getReleaseComment()));
+    renderResult = renderResult.replaceAll(EMAIL_CONTENT_FIELD_RELEASE_COMMENT, Matcher.quoteReplacement(releaseHistory.getReleaseComment() == null ? "" : releaseHistory.getReleaseComment()));
     renderResult = renderResult.replaceAll(EMAIL_CONTENT_FIELD_APOLLO_SERVER_ADDRESS, getApolloPortalAddress());
     return renderResult
             .replaceAll(EMAIL_CONTENT_FIELD_RELEASE_TIME, dateFormat.format(releaseHistory.getReleaseTime()));

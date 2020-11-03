@@ -3,7 +3,7 @@ package com.ctrip.framework.apollo.openapi.v1.controller;
 import com.ctrip.framework.apollo.common.dto.ItemDTO;
 import com.ctrip.framework.apollo.common.exception.BadRequestException;
 import com.ctrip.framework.apollo.common.utils.RequestPrecondition;
-import com.ctrip.framework.apollo.core.enums.Env;
+import com.ctrip.framework.apollo.portal.environment.Env;
 import com.ctrip.framework.apollo.core.utils.StringUtils;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.util.OpenApiBeanUtils;
@@ -60,6 +60,10 @@ public class ItemController {
       throw new BadRequestException("User " + item.getDataChangeCreatedBy() + " doesn't exist!");
     }
 
+    if(!StringUtils.isEmpty(item.getComment()) && item.getComment().length() > 64){
+      throw new BadRequestException("Comment length should not exceed 64 characters");
+    }
+
     ItemDTO toCreate = OpenApiBeanUtils.transformToItemDTO(item);
 
     //protect
@@ -91,6 +95,10 @@ public class ItemController {
 
     if (userService.findByUserId(item.getDataChangeLastModifiedBy()) == null) {
       throw new BadRequestException("user(dataChangeLastModifiedBy) not exists");
+    }
+
+    if(!StringUtils.isEmpty(item.getComment()) && item.getComment().length() > 64){
+      throw new BadRequestException("Comment length should not exceed 64 characters");
     }
 
     try {
