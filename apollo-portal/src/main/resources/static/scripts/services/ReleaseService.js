@@ -1,30 +1,34 @@
-appService.service('ReleaseService', ['$resource', '$q', function ($resource, $q) {
+appService.service('ReleaseService', ['$resource', '$q','AppUtil', function ($resource, $q,AppUtil) {
     var resource = $resource('', {}, {
+        get: {
+            method: 'GET',
+            url: AppUtil.prefixPath() + '/envs/:env/releases/:releaseId'
+        },
         find_all_releases: {
             method: 'GET',
-            url: '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/releases/all',
+            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/releases/all',
             isArray: true
         },
         find_active_releases: {
             method: 'GET',
-            url: '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/releases/active',
+            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/releases/active',
             isArray: true
         },
         compare: {
             method: 'GET',
-            url: '/envs/:env/releases/compare'
+            url: AppUtil.prefixPath() + '/envs/:env/releases/compare'
         },
         release: {
             method: 'POST',
-            url: '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/releases'
+            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/releases'
         },
         gray_release: {
             method: 'POST',
-            url: '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/branches/:branchName/releases'
+            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/branches/:branchName/releases'
         },
         rollback: {
             method: 'PUT',
-            url: "envs/:env/releases/:releaseId/rollback"
+            url: AppUtil.prefixPath() + "/envs/:env/releases/:releaseId/rollback"
         }
     });
 
@@ -60,6 +64,19 @@ appService.service('ReleaseService', ['$resource', '$q', function ($resource, $q
                                   releaseComment: comment,
                                   isEmergencyPublish: isEmergencyPublish
                               }, function (result) {
+            d.resolve(result);
+        }, function (result) {
+            d.reject(result);
+        });
+        return d.promise;
+    }
+
+    function get(env, releaseId) {
+        var d = $q.defer();
+        resource.get({
+                         env: env,
+                         releaseId: releaseId
+                         }, function (result) {
             d.resolve(result);
         }, function (result) {
             d.reject(result);
@@ -153,13 +170,31 @@ appService.service('ReleaseService', ['$resource', '$q', function ($resource, $q
 
     }
 
+    function rollbackTo(env, releaseId, toReleaseId) {
+        var d = $q.defer();
+        resource.rollback({
+                              env: env,
+                              releaseId: releaseId,
+                              toReleaseId: toReleaseId
+                          }, {}, function (result) {
+                              d.resolve(result);
+                          }, function (result) {
+                              d.reject(result);
+                          }
+        );
+        return d.promise;
+
+    }
+
     return {
         publish: createRelease,
         grayPublish: createGrayRelease,
+        get: get,
         findAllRelease: findAllReleases,
         findActiveReleases: findActiveReleases,
         findLatestActiveRelease: findLatestActiveRelease,
         compare: compare,
-        rollback: rollback
+        rollback: rollback,
+        rollbackTo: rollbackTo
     }
 }]);

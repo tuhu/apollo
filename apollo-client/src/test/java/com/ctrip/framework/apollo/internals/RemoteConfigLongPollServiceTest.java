@@ -1,6 +1,7 @@
 package com.ctrip.framework.apollo.internals;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -11,14 +12,26 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ctrip.framework.apollo.build.MockInjector;
+import com.ctrip.framework.apollo.core.dto.ApolloConfigNotification;
+import com.ctrip.framework.apollo.core.dto.ApolloNotificationMessages;
+import com.ctrip.framework.apollo.core.dto.ServiceDTO;
+import com.ctrip.framework.apollo.core.signature.Signature;
+import com.ctrip.framework.apollo.util.ConfigUtil;
+import com.ctrip.framework.apollo.util.http.HttpRequest;
+import com.ctrip.framework.apollo.util.http.HttpResponse;
+import com.ctrip.framework.apollo.util.http.HttpUtil;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.net.HttpHeaders;
+import com.google.common.util.concurrent.SettableFuture;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.servlet.http.HttpServletResponse;
-
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,18 +41,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import com.ctrip.framework.apollo.build.MockInjector;
-import com.ctrip.framework.apollo.core.dto.ApolloConfigNotification;
-import com.ctrip.framework.apollo.core.dto.ApolloNotificationMessages;
-import com.ctrip.framework.apollo.core.dto.ServiceDTO;
-import com.ctrip.framework.apollo.util.ConfigUtil;
-import com.ctrip.framework.apollo.util.http.HttpRequest;
-import com.ctrip.framework.apollo.util.http.HttpResponse;
-import com.ctrip.framework.apollo.util.http.HttpUtil;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * @author Jason Song(song_s@ctrip.com)
@@ -58,11 +59,10 @@ public class RemoteConfigLongPollServiceTest {
   private static String someServerUrl;
   private static String someAppId;
   private static String someCluster;
+  private static String someSecret;
 
   @Before
   public void setUp() throws Exception {
-    MockInjector.reset();
-
     MockInjector.setInstance(HttpUtil.class, httpUtil);
 
     someServerUrl = "http://someServer";
@@ -80,6 +80,11 @@ public class RemoteConfigLongPollServiceTest {
 
     someAppId = "someAppId";
     someCluster = "someCluster";
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    MockInjector.reset();
   }
 
   @Test
@@ -176,6 +181,59 @@ public class RemoteConfigLongPollServiceTest {
     assertEquals(2, captured.getDetails().size());
     assertEquals(someNotificationId, captured.get(someKey).longValue());
     assertEquals(anotherNotificationId, captured.get(anotherKey).longValue());
+  }
+
+  @Test
+  public void testSubmitLongPollNamespaceWithAccessKeySecret() throws Exception {
+    someSecret = "someSecret";
+    RemoteConfigRepository someRepository = mock(RemoteConfigRepository.class);
+    final String someNamespace = "someNamespace";
+    ApolloNotificationMessages notificationMessages = new ApolloNotificationMessages();
+    String someKey = "someKey";
+    long someNotificationId = 1;
+    notificationMessages.put(someKey, someNotificationId);
+
+    ApolloConfigNotification someNotification = mock(ApolloConfigNotification.class);
+    when(someNotification.getNamespaceName()).thenReturn(someNamespace);
+    when(someNotification.getMessages()).thenReturn(notificationMessages);
+
+    when(pollResponse.getStatusCode()).thenReturn(HttpServletResponse.SC_OK);
+    when(pollResponse.getBody()).thenReturn(Lists.newArrayList(someNotification));
+
+    doAnswer(new Answer<HttpResponse<List<ApolloConfigNotification>>>() {
+      @Override
+      public HttpResponse<List<ApolloConfigNotification>> answer(InvocationOnMock invocation)
+          throws Throwable {
+        try {
+          TimeUnit.MILLISECONDS.sleep(50);
+        } catch (InterruptedException e) {
+        }
+
+        HttpRequest request = invocation.getArgumentAt(0, HttpRequest.class);
+
+        Map<String, String> headers = request.getHeaders();
+        assertNotNull(headers);
+        assertTrue(headers.containsKey(Signature.HTTP_HEADER_TIMESTAMP));
+        assertTrue(headers.containsKey(HttpHeaders.AUTHORIZATION));
+
+        return pollResponse;
+      }
+    }).when(httpUtil).doGet(any(HttpRequest.class), eq(responseType));
+
+    final SettableFuture<Boolean> onNotified = SettableFuture.create();
+    doAnswer(new Answer<Void>() {
+      @Override
+      public Void answer(InvocationOnMock invocation) throws Throwable {
+        onNotified.set(true);
+        return null;
+      }
+    }).when(someRepository).onLongPollNotified(any(ServiceDTO.class), any(ApolloNotificationMessages.class));
+
+    remoteConfigLongPollService.submit(someNamespace, someRepository);
+    onNotified.get(5000, TimeUnit.MILLISECONDS);
+    remoteConfigLongPollService.stopLongPollingRefresh();
+
+    verify(someRepository, times(1)).onLongPollNotified(any(ServiceDTO.class), any(ApolloNotificationMessages.class));
   }
 
   @Test
@@ -474,6 +532,11 @@ public class RemoteConfigLongPollServiceTest {
     @Override
     public String getCluster() {
       return someCluster;
+    }
+
+    @Override
+    public String getAccessKeySecret() {
+      return someSecret;
     }
 
     @Override

@@ -5,7 +5,7 @@ import com.ctrip.framework.apollo.common.dto.ItemDTO;
 import com.ctrip.framework.apollo.common.dto.NamespaceDTO;
 import com.ctrip.framework.apollo.common.exception.BadRequestException;
 import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
-import com.ctrip.framework.apollo.core.enums.Env;
+import com.ctrip.framework.apollo.portal.environment.Env;
 import com.ctrip.framework.apollo.core.utils.StringUtils;
 import com.ctrip.framework.apollo.portal.component.PermissionValidator;
 import com.ctrip.framework.apollo.portal.entity.model.NamespaceSyncModel;
@@ -33,6 +33,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import static com.ctrip.framework.apollo.common.utils.RequestPrecondition.checkModel;
 
@@ -164,7 +169,7 @@ public class ItemController {
       if (permissionValidator
           .shouldHideConfigToCurrentUser(namespace.getAppId(), namespace.getEnv().name(), namespace.getNamespaceName())) {
         diff.setDiffs(new ItemChangeSets());
-        diff.setExtInfo("您不是该项目的管理员，也没有该Namespace在 " + namespace.getEnv() +  " 环境的编辑或发布权限");
+        diff.setExtInfo("You are not this project's administrator, nor you have edit or release permission for the namespace in environment: " + namespace.getEnv());
       }
     }
 
@@ -194,8 +199,7 @@ public class ItemController {
       configService.syncItems(model.getSyncToNamespaces(), model.getSyncItems());
       return ResponseEntity.status(HttpStatus.OK).build();
     }
-    else
-      throw new AccessDeniedException(String.format("您没有修改环境%s的权限", envNoPermission));
+    throw new AccessDeniedException(String.format("You don't have the permission to modify environment: %s", envNoPermission));
   }
 
   @PreAuthorize(value = "@permissionValidator.hasModifyNamespacePermission(#appId, #namespaceName, #env)")
@@ -209,7 +213,14 @@ public class ItemController {
     return ResponseEntity.ok().build();
   }
 
-  private void doSyntaxCheck(NamespaceTextModel model) {
+  @PreAuthorize(value = "@permissionValidator.hasModifyNamespacePermission(#appId, #namespaceName, #env)")
+  @PutMapping("/apps/{appId}/envs/{env}/clusters/{clusterName}/namespaces/{namespaceName}/revoke-items")
+  public void revokeItems(@PathVariable String appId, @PathVariable String env, @PathVariable String clusterName,
+      @PathVariable String namespaceName) {
+    configService.revokeItem(appId, Env.valueOf(env), clusterName, namespaceName);
+  }
+
+  void doSyntaxCheck(NamespaceTextModel model) {
     if (StringUtils.isBlank(model.getConfigText())) {
       return;
     }
@@ -220,7 +231,7 @@ public class ItemController {
     }
 
     // use YamlPropertiesFactoryBean to check the yaml syntax
-    YamlPropertiesFactoryBean yamlPropertiesFactoryBean = new YamlPropertiesFactoryBean();
+    TypeLimitedYamlPropertiesFactoryBean yamlPropertiesFactoryBean = new TypeLimitedYamlPropertiesFactoryBean();
     yamlPropertiesFactoryBean.setResources(new ByteArrayResource(model.getConfigText().getBytes()));
     // this call converts yaml to properties and will throw exception if the conversion fails
     yamlPropertiesFactoryBean.getObject();
@@ -230,5 +241,14 @@ public class ItemController {
     return Objects.nonNull(item) && !StringUtils.isContainEmpty(item.getKey());
   }
 
+  private static class TypeLimitedYamlPropertiesFactoryBean extends YamlPropertiesFactoryBean {
+    @Override
+    protected Yaml createYaml() {
+      LoaderOptions loaderOptions = new LoaderOptions();
+      loaderOptions.setAllowDuplicateKeys(false);
+      return new Yaml(new SafeConstructor(), new Representer(),
+          new DumperOptions(), loaderOptions);
+    }
+  }
 
 }

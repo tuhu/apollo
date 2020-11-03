@@ -3,7 +3,7 @@ directive_module.directive('itemmodal', itemModalDirective);
 function itemModalDirective($translate, toastr, $sce, AppUtil, EventManager, ConfigService) {
     return {
         restrict: 'E',
-        templateUrl: '../../views/component/item-modal.html',
+        templateUrl: AppUtil.prefixPath() + '/views/component/item-modal.html',
         transclude: true,
         replace: true,
         scope: {
@@ -144,7 +144,7 @@ function itemModalDirective($translate, toastr, $sce, AppUtil, EventManager, Con
                     return;
                 }
 
-                var hiddenCharCounter = 0, valueWithHiddenChars = value;
+                var hiddenCharCounter = 0, valueWithHiddenChars = _.escape(value);
 
                 for (var i = 0; i < value.length; i++) {
                     var c = value[i];
