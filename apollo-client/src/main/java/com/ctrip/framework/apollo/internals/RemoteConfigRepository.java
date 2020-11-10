@@ -172,6 +172,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
       }
     }
     String appId = m_configUtil.getAppId();
+    String appTag = m_configUtil.getAppTag();
     String cluster = m_configUtil.getCluster();
     String dataCenter = m_configUtil.getDataCenter();
     String secret = m_configUtil.getAccessKeySecret();
@@ -204,7 +205,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
           }
         }
 
-        url = assembleQueryConfigUrl(configService.getHomepageUrl(), appId, cluster, m_namespace,
+        url = assembleQueryConfigUrl(configService.getHomepageUrl(), appId, appTag, cluster, m_namespace,
                 dataCenter, m_remoteMessages.get(), m_configCache.get());
 
         logger.debug("Loading config from {}", url);
@@ -273,7 +274,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
     throw new ApolloConfigException(message, exception);
   }
 
-  String assembleQueryConfigUrl(String uri, String appId, String cluster, String namespace,
+  String assembleQueryConfigUrl(String uri, String appId, String appTag, String cluster, String namespace,
                                 String dataCenter, ApolloNotificationMessages remoteMessages, ApolloConfig previousConfig) {
 
     String path = "configs/%s/%s/%s";
@@ -294,6 +295,10 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
     if (!Strings.isNullOrEmpty(localIp)) {
       queryParams.put("ip", queryParamEscaper.escape(localIp));
     }
+    
+    if (!Strings.isNullOrEmpty(appTag)) {
+        queryParams.put("appTag", queryParamEscaper.escape(appTag));
+      }
 
     if (remoteMessages != null) {
       queryParams.put("messages", queryParamEscaper.escape(gson.toJson(remoteMessages)));

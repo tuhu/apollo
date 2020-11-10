@@ -20,6 +20,7 @@ public class DefaultApplicationProvider implements ApplicationProvider {
   private Properties m_appProperties = new Properties();
 
   private String m_appId;
+  private String m_appTag;
   private String accessKeySecret;
 
   @Override
@@ -50,6 +51,7 @@ public class DefaultApplicationProvider implements ApplicationProvider {
       }
 
       initAppId();
+      initAppTag();
       initAccessKey();
     } catch (Throwable ex) {
       logger.error("Initialize DefaultApplicationProvider failed.", ex);
@@ -59,6 +61,11 @@ public class DefaultApplicationProvider implements ApplicationProvider {
   @Override
   public String getAppId() {
     return m_appId;
+  }
+  
+  @Override
+  public String getAppTag() {	
+	return m_appTag;
   }
 
   @Override
@@ -122,6 +129,26 @@ public class DefaultApplicationProvider implements ApplicationProvider {
     logger.warn("app.id is not available from System Property and {}. It is set to null",
         APP_PROPERTIES_CLASSPATH);
   }
+  
+  private void initAppTag() {
+	  m_appTag = System.getenv("swimlane");
+      if (!Utils.isBlank(m_appTag)) {
+    	  m_appTag = "swimlane_" + m_appTag.trim();
+    	  logger.info("app Tag is set to {} by swimlane property from OS environment variable", m_appTag);
+    	  return;
+      }
+      
+      m_appTag = System.getenv("apollo.tag");
+      if (!Utils.isBlank(m_appTag)) {
+    	  m_appTag = m_appTag.trim();
+    	  logger.info("app Tag is set to {} by apollo tag property from OS environment variable", m_appTag);
+    	  return;
+      }
+      
+      m_appTag = "";
+      logger.warn("the app tag is set to null, because it not set value from OS environment variable.");
+      
+  }
 
   private void initAccessKey() {
     // 1. Get accesskey secret from System Property
@@ -159,4 +186,5 @@ public class DefaultApplicationProvider implements ApplicationProvider {
     return "appId [" + getAppId() + "] properties: " + m_appProperties
         + " (DefaultApplicationProvider)";
   }
+
 }

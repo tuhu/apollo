@@ -1,11 +1,19 @@
 package com.ctrip.framework.apollo.biz.service;
 
+import java.util.Map;
+
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ctrip.framework.apollo.biz.entity.Audit;
 import com.ctrip.framework.apollo.biz.entity.Cluster;
 import com.ctrip.framework.apollo.biz.entity.GrayReleaseRule;
 import com.ctrip.framework.apollo.biz.entity.Namespace;
 import com.ctrip.framework.apollo.biz.entity.Release;
+import com.ctrip.framework.apollo.biz.entity.TagReleaseRule;
 import com.ctrip.framework.apollo.biz.repository.GrayReleaseRuleRepository;
+import com.ctrip.framework.apollo.biz.repository.TagReleaseRuleRepository;
 import com.ctrip.framework.apollo.common.constants.NamespaceBranchStatus;
 import com.ctrip.framework.apollo.common.constants.ReleaseOperation;
 import com.ctrip.framework.apollo.common.constants.ReleaseOperationContext;
@@ -13,17 +21,13 @@ import com.ctrip.framework.apollo.common.exception.BadRequestException;
 import com.ctrip.framework.apollo.common.utils.GrayReleaseRuleItemTransformer;
 import com.ctrip.framework.apollo.common.utils.UniqueKeyGenerator;
 import com.google.common.collect.Maps;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Map;
 
 @Service
 public class NamespaceBranchService {
 
   private final AuditService auditService;
   private final GrayReleaseRuleRepository grayReleaseRuleRepository;
+  private final TagReleaseRuleRepository tagReleaseRuleRepository;
   private final ClusterService clusterService;
   private final ReleaseService releaseService;
   private final NamespaceService namespaceService;
@@ -32,12 +36,14 @@ public class NamespaceBranchService {
   public NamespaceBranchService(
       final AuditService auditService,
       final GrayReleaseRuleRepository grayReleaseRuleRepository,
+      final TagReleaseRuleRepository tagReleaseRuleRepository,
       final ClusterService clusterService,
       final @Lazy ReleaseService releaseService,
       final NamespaceService namespaceService,
       final ReleaseHistoryService releaseHistoryService) {
     this.auditService = auditService;
     this.grayReleaseRuleRepository = grayReleaseRuleRepository;
+    this.tagReleaseRuleRepository = tagReleaseRuleRepository;
     this.clusterService = clusterService;
     this.releaseService = releaseService;
     this.namespaceService = namespaceService;
@@ -71,12 +77,52 @@ public class NamespaceBranchService {
     return namespaceService.findChildNamespace(appId, parentClusterName, namespaceName);
   }
 
+  public TagReleaseRule findBranchTagRules(String appId, String clusterName, String namespaceName,
+          String branchName) {	  
+	  return tagReleaseRuleRepository.findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
+  }
+  
   public GrayReleaseRule findBranchGrayRules(String appId, String clusterName, String namespaceName,
                                              String branchName) {
     return grayReleaseRuleRepository
         .findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
   }
 
+  public void updateBranchTagRules(String appId, String clusterName, String namespaceName,
+          String branchName, TagReleaseRule newRules) {
+	  doUpdateBranchTagRule(appId, clusterName, namespaceName, branchName, newRules, true, ReleaseOperation.APPLY_TAG_RULES);
+  }
+  
+  private void doUpdateBranchTagRule(String appId, String clusterName, String namespaceName,
+          String branchName, TagReleaseRule newRules, boolean recordReleaseHistory, int releaseOperation) {
+	  TagReleaseRule oldRules = tagReleaseRuleRepository
+		        .findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
+
+		    Release latestBranchRelease = releaseService.findLatestActiveRelease(appId, branchName, namespaceName);
+
+		    long latestBranchReleaseId = latestBranchRelease != null ? latestBranchRelease.getId() : 0;
+
+		    newRules.setReleaseId(latestBranchReleaseId);
+
+		    tagReleaseRuleRepository.save(newRules);
+
+		    //delete old rules
+		    if (oldRules != null) {
+		    	tagReleaseRuleRepository.delete(oldRules);
+		    }
+
+		    if (recordReleaseHistory) {
+		      Map<String, Object> releaseOperationContext = Maps.newHashMap();
+		      releaseOperationContext.put(ReleaseOperationContext.RULES, newRules.getTag());
+		      if (oldRules != null) {
+		        releaseOperationContext.put(ReleaseOperationContext.OLD_RULES,
+		        		oldRules.getTag());
+		      }
+		      releaseHistoryService.createReleaseHistory(appId, clusterName, namespaceName, branchName, latestBranchReleaseId,
+		          latestBranchReleaseId, releaseOperation, releaseOperationContext, newRules.getDataChangeLastModifiedBy());
+		    }
+  }
+  
   @Transactional
   public void updateBranchGrayRules(String appId, String clusterName, String namespaceName,
                                     String branchName, GrayReleaseRule newRules) {
