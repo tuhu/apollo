@@ -1,5 +1,21 @@
 package com.ctrip.framework.apollo.biz.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import com.ctrip.framework.apollo.biz.entity.Audit;
 import com.ctrip.framework.apollo.biz.entity.Cluster;
 import com.ctrip.framework.apollo.biz.entity.Item;
@@ -18,20 +34,6 @@ import com.ctrip.framework.apollo.common.utils.BeanUtils;
 import com.ctrip.framework.apollo.core.ConfigConsts;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class NamespaceService {
@@ -189,6 +191,30 @@ public class NamespaceService {
 
   public List<Namespace> findByAppIdAndNamespaceName(String appId, String namespaceName) {
     return namespaceRepository.findByAppIdAndNamespaceNameOrderByIdAsc(appId, namespaceName);
+  }
+  
+  public List<Namespace> findChildNamespaces(String appId, String parentClusterName, String namespaceName) {
+    List<Namespace> namespaces = findByAppIdAndNamespaceName(appId, namespaceName);
+    if (CollectionUtils.isEmpty(namespaces) || namespaces.size() == 1) {
+      return null;
+    }
+
+    List<Cluster> childClusters = clusterService.findChildClusters(appId, parentClusterName);
+    if (CollectionUtils.isEmpty(childClusters)) {
+      return null;
+    }
+
+    List<Namespace> result = new ArrayList<Namespace>();
+    
+    Set<String> childClusterNames = childClusters.stream().map(Cluster::getName).collect(Collectors.toSet());
+    //the child namespace is the intersection of the child clusters and child namespaces
+    for (Namespace namespace : namespaces) {
+      if (childClusterNames.contains(namespace.getClusterName())) {
+    	  result.add(namespace);
+      }
+    }
+
+    return result;
   }
 
   public Namespace findChildNamespace(String appId, String parentClusterName, String namespaceName) {

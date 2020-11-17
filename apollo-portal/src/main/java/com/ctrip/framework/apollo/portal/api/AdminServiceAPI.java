@@ -476,6 +476,37 @@ public class AdminServiceAPI {
           appId, clusterName, namespaceName, branchName, operator);
     }
   }
+  
+  @Service
+  public static class NamespaceTagAPI extends API {
+
+    public NamespaceDTO createTagBranch(String appId, Env env, String clusterName,
+        String namespaceName, String tag, String operator) {
+      return restTemplate
+          .post(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/{tag}?operator={operator}",
+              null, NamespaceDTO.class, appId, clusterName, namespaceName, operator);
+    }
+
+    public NamespaceDTO findTagBranch(String appId, Env env, String clusterName,
+        String namespaceName, String tag) {
+      return restTemplate.get(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/{tag}",
+          NamespaceDTO.class, appId, clusterName, namespaceName, tag);
+    }
+    
+    public List<NamespaceDTO> findTagBranchs(String appId, Env env, String clusterName,
+        String namespaceName) {
+    	NamespaceDTO[] insts =  restTemplate.get(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branches",
+          NamespaceDTO[].class, appId, clusterName, namespaceName);
+    	return Arrays.asList(insts);
+    }
+
+    public void deleteTagBranch(String appId, Env env, String clusterName,
+        String namespaceName, String branchName, String operator) {
+      restTemplate.delete(env,
+          "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/{branchName}?operator={operator}",
+          appId, clusterName, namespaceName, branchName, operator);
+    }
+  }
 
   @Service
   public static class ReleaseHistoryAPI extends API {

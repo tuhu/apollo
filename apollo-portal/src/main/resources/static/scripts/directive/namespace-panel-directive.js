@@ -1,7 +1,7 @@
 directive_module.directive('apollonspanel', directive);
 
 function directive($window, $translate, toastr, AppUtil, EventManager, PermissionService, NamespaceLockService,
-    UserService, CommitService, ReleaseService, InstanceService, NamespaceBranchService, ConfigService) {
+    UserService, CommitService, ReleaseService, InstanceService, NamespaceBranchService, ConfigService, NamespaceTagService) {
     return {
         restrict: 'E',
         templateUrl: AppUtil.prefixPath() + '/views/component/namespace-panel.html',
@@ -22,6 +22,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
             showNoModifyPermissionDialog: '=',
             preCreateBranch: '=',
             preDeleteBranch: '=',
+			preCreateTag: '=',
             showMergeAndPublishGrayTips: '=',
             showBody: "=?",
             lazyLoad: "=?"
@@ -110,6 +111,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
             function initNamespace(namespace, viewType) {
                 namespace.hasBranch = false;
                 namespace.isBranch = false;
+				namespace.hasTag = false;
                 namespace.displayControl = {
                     currentOperateBranch: 'master',
                     showSearchInput: false,
@@ -128,12 +130,53 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 
                 generateNamespaceId(namespace);
                 initNamespaceBranch(namespace);
+				initNamespaceTags(namespace);
                 initNamespaceViewName(namespace);
                 initNamespaceLock(namespace);
                 initNamespaceInstancesCount(namespace);
                 initPermission(namespace);
                 initLinkedNamespace(namespace);
                 loadInstanceInfo(namespace);
+
+				function initNamespaceTags(namespace) {
+					NamespaceTagService.findNamespaceTags(scope.appId, scope.env,
+                        namespace.baseInfo.clusterName,
+                        namespace.baseInfo.namespaceName)
+						.then(function (result) {
+							if (!result || result.length == 0) {
+                                return;
+                            }
+
+							namespace.hasTag = true;
+							namespace.tags = [];
+							initPermission(namespace);
+	                        initUserOperateBranchScene(namespace);
+
+							result.forEach(function(ns,index){
+							    var tag = ns;
+								tag.isBranch = true;
+								tag.branchName = ns.baseInfo.clusterName;
+								tag.parentNamespace = namespace;
+								tag.viewType = namespace_view_type.TABLE;
+	                            tag.isPropertiesFormat = namespace.format == 'properties';
+	                            tag.allInstances = [];//master namespace all instances
+	                            tag.latestReleaseInstances = [];
+	                            tag.latestReleaseInstancesPage = 0;
+	                            tag.instanceViewType = namespace_instance_view_type.LATEST_RELEASE;
+	                            tag.hasLoadInstances = false;
+	                            tag.displayControl = {
+	                                show: true
+	                            };
+								generateNamespaceId(tag);
+	                            initBranchItems(tag);
+	                            loadInstanceInfo(tag);
+	                            initNamespaceLock(tag);
+								namespace.tags.push(tag);
+								
+							})
+							
+						});
+				}
 
                 function initNamespaceBranch(namespace) {
                     NamespaceBranchService.findNamespaceBranch(scope.appId, scope.env,

@@ -80,6 +80,14 @@
                     <img src="img/test.png">
                     {{'Component.Namespace.Master.Items.Grayscale' | translate }}
                 </a>
+                
+                <a type="button" class="btn btn-default btn-sm" data-tooltip="tooltip" data-placement="bottom"
+                    title="{{'Component.Namespace.Master.Items.SwimscaleTips' | translate }}"
+                    ng-show="namespace.isPropertiesFormat && namespace.hasModifyPermission"
+                    ng-click="preCreateTag(namespace)">
+                    <img src="img/test.png">
+                    {{'Component.Namespace.Master.Items.Swimscale' | translate }}
+                </a>
 
                 <a type="button" class="btn btn-default btn-sm J_tableview_btn" data-tooltip="tooltip"
                     data-placement="bottom"
@@ -697,12 +705,12 @@
             </div>
 
             <!--text view-->
-            <!--只读模式下的文本内容,不替换换行符-->
+            <!--鍙妯″紡涓嬬殑鏂囨湰鍐呭,涓嶆浛鎹㈡崲琛岀-->
             <div ui-ace="aceConfig" readonly="true" class="form-control no-radius"
                 rows="{{namespace.itemCnt < 10 ? 10: namespace.itemCnt>20 ? 20:namespace.itemCnt}}"
                 ng-show="namespace.viewType == 'text' && !namespace.isTextEditing" ng-model="namespace.text">
             </div>
-            <!--编辑状态下的文本内容,会过滤掉换行符-->
+            <!--缂栬緫鐘舵�佷笅鐨勬枃鏈唴瀹�,浼氳繃婊ゆ帀鎹㈣绗�-->
             <div ui-ace="aceConfig" class="form-control no-radius"
                 rows="{{namespace.itemCnt < 10 ? 10: namespace.itemCnt>20 ? 20:namespace.itemCnt}}"
                 ng-show="namespace.viewType == 'text' && namespace.isTextEditing" ng-disabled="!namespace.isTextEditing"
@@ -749,7 +757,7 @@
                             </thead>
                             <tbody>
 
-                                <!--兼容老数据,不显示item类型为空行和注释的item-->
+                                <!--鍏煎鑰佹暟鎹�,涓嶆樉绀篿tem绫诲瀷涓虹┖琛屽拰娉ㄩ噴鐨刬tem-->
                                 <tr ng-repeat="item in commits.changeSets.createItems" ng-show="item.key">
                                     <td width="6%">
                                         {{'Component.Namespace.Master.Items.Body.HistoryView.NewAdded' | translate }}
