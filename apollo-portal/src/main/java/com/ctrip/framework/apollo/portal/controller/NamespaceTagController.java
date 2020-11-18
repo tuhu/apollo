@@ -46,11 +46,13 @@ public class NamespaceTagController {
                                 @PathVariable String clusterName,
                                 @PathVariable String namespaceName) {
 	  List<NamespaceBO> namespaceBOs = namespaceTagService.findTagBranchs(appId, Env.valueOf(env), clusterName, namespaceName);
-	  for(NamespaceBO namespaceBO : namespaceBOs) {
-		  if (namespaceBO != null && permissionValidator.shouldHideConfigToCurrentUser(appId, env, namespaceName)) {
-			  namespaceBO.hideItems();
-	      }
-	  }
+	  if(namespaceBOs != null) {
+		  for(NamespaceBO namespaceBO : namespaceBOs) {
+			  if (namespaceBO != null && permissionValidator.shouldHideConfigToCurrentUser(appId, env, namespaceName)) {
+				  namespaceBO.hideItems();
+		      }
+		  }
+	  }	  
 
 	  return namespaceBOs;
   }

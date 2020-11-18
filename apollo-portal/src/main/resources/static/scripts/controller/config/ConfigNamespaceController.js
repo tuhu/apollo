@@ -311,7 +311,7 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
 		NamespaceTagService.createTag($rootScope.pageContext.appId,
             $rootScope.pageContext.env,
             $rootScope.pageContext.clusterName,
-            toCreateBranchNamespace.baseInfo.namespaceName,
+            toCreateTagNamespace.baseInfo.namespaceName,
 			$scope.swimlane.name)
             .then(function (result) {
                 toastr.success($translate.instant('Config.SwimlaneCreated'));

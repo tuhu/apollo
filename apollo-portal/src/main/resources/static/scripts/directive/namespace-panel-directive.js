@@ -45,6 +45,8 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
             };
 
             var operate_branch_storage_key = 'OperateBranch';
+			var operate_tag_branch_storage_key = 'OperateTagBranch';
+			
 
             scope.refreshNamespace = refreshNamespace;
             scope.switchView = switchView;
@@ -143,19 +145,19 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                         namespace.baseInfo.clusterName,
                         namespace.baseInfo.namespaceName)
 						.then(function (result) {
-							if (!result || result.length == 0) {
+							if (!result) {
                                 return;
                             }
 
 							namespace.hasTag = true;
 							namespace.tags = [];
 							initPermission(namespace);
-	                        initUserOperateBranchScene(namespace);
+	                        initUserOperateTagBranchScene(namespace);
 
-							result.forEach(function(ns,index){
+							angular.forEach(result, function(ns){
 							    var tag = ns;
 								tag.isBranch = true;
-								tag.branchName = ns.baseInfo.clusterName;
+								tag.branchName = ns.clusterName;
 								tag.parentNamespace = namespace;
 								tag.viewType = namespace_view_type.TABLE;
 	                            tag.isPropertiesFormat = namespace.format == 'properties';
@@ -176,6 +178,68 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 							})
 							
 						});
+						
+						function initBranchItems(branch) {
+                        branch.masterItems = [];
+                        branch.branchItems = [];
+
+                        var masterItemsMap = {};
+                        branch.parentNamespace.items.forEach(function (item) {
+                            if (item.item.key) {
+                                masterItemsMap[item.item.key] = item;
+                            }
+                        });
+
+                        var branchItemsMap = {};
+
+                        var itemModifiedCnt = 0;
+                        branch.items.forEach(function (item) {
+                            var key = item.item.key;
+                            var masterItem = masterItemsMap[key];
+
+                            //modify master item and set item's masterReleaseValue
+                            if (masterItem) {
+                                item.masterItemExists = true;
+                                if (masterItem.isModified) {
+                                    item.masterReleaseValue = masterItem.oldValue;
+                                } else {
+                                    item.masterReleaseValue = masterItem.item.value;
+                                }
+
+                            } else {//delete branch item
+                                item.masterItemExists = false;
+                            }
+
+                            //delete master item. ignore
+                            if (item.isDeleted && masterItem) {
+                                if (item.masterReleaseValue != item.oldValue) {
+                                    itemModifiedCnt++;
+                                    branch.branchItems.push(item);
+                                }
+                            } else {//branch's item
+                                branchItemsMap[key] = item;
+
+                                if (item.isModified) {
+                                    itemModifiedCnt++;
+                                }
+                                branch.branchItems.push(item);
+                            }
+
+                        });
+                        branch.itemModifiedCnt = itemModifiedCnt;
+
+                        branch.parentNamespace.items.forEach(function (item) {
+                            if (item.item.key) {
+                                if (!branchItemsMap[item.item.key]) {
+                                    branch.masterItems.push(item);
+                                } else {
+                                    item.hasBranchValue = true;
+                                }
+                            }
+                        })
+
+                    }
+						
 				}
 
                 function initNamespaceBranch(namespace) {
@@ -398,6 +462,43 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                         });
 
                 }
+
+				function initUserOperateTagBranchScene(namespace) {
+                    var operateBranchStorage = JSON.parse(localStorage.getItem(operate_tag_branch_storage_key));
+                    var namespaceId = [scope.appId, scope.env, scope.cluster, namespace.baseInfo.namespaceName].join(
+                        "+");
+                    if (!operateBranchStorage) {
+                        operateBranchStorage = {};
+                    }
+                    if (!operateBranchStorage[namespaceId]) {
+                        operateBranchStorage[namespaceId] = namespace.branchName;
+                    }
+
+                    localStorage.setItem(operate_tag_branch_storage_key, JSON.stringify(operateBranchStorage));
+
+                    switchTagBranch(operateBranchStorage[namespaceId], false);
+
+                }
+
+				function switchTagBranch(branchName, forceShowBody) {
+
+	                if (forceShowBody) {
+	                    scope.showNamespaceBody = true;
+	                }
+	
+	                scope.namespace.displayControl.currentOperateBranch = branchName;
+	
+	                //save to local storage
+	                var operateBranchStorage = JSON.parse(localStorage.getItem(operate_tag_branch_storage_key));
+	                if (!operateBranchStorage) {
+	                    return;
+	                }
+	                var namespaceId = [scope.appId, scope.env, scope.cluster, scope.namespace.baseInfo.namespaceName].join(
+	                    "+");
+	                operateBranchStorage[namespaceId] = branchName;
+	                localStorage.setItem(operate_tag_branch_storage_key, JSON.stringify(operateBranchStorage));
+	
+	            }
 
                 function initUserOperateBranchScene(namespace) {
                     var operateBranchStorage = JSON.parse(localStorage.getItem(operate_branch_storage_key));

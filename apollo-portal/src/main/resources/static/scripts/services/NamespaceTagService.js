@@ -2,7 +2,7 @@ appService.service('NamespaceTagService', ['$resource', '$q', 'AppUtil', functio
     var resource = $resource('', {}, {
         find_namespace_tags: {
             method: 'GET',
-            isArray: false,
+            isArray: true,
             url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/tag/branchs'
         },
 		find_namespace_tag: {

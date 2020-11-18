@@ -484,7 +484,7 @@ public class AdminServiceAPI {
         String namespaceName, String tag, String operator) {
       return restTemplate
           .post(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/{tag}?operator={operator}",
-              null, NamespaceDTO.class, appId, clusterName, namespaceName, operator);
+              null, NamespaceDTO.class, appId, clusterName, namespaceName, tag, operator);
     }
 
     public NamespaceDTO findTagBranch(String appId, Env env, String clusterName,
@@ -497,7 +497,10 @@ public class AdminServiceAPI {
         String namespaceName) {
     	NamespaceDTO[] insts =  restTemplate.get(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branches",
           NamespaceDTO[].class, appId, clusterName, namespaceName);
-    	return Arrays.asList(insts);
+    	if(insts != null && insts.length > 0) {
+    		return Arrays.asList(insts);
+    	}
+    	return new ArrayList<NamespaceDTO>();
     }
 
     public void deleteTagBranch(String appId, Env env, String clusterName,
