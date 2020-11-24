@@ -61,6 +61,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
             scope.goToParentAppConfigPage = goToParentAppConfigPage;
             scope.switchInstanceViewType = switchInstanceViewType;
             scope.switchBranch = switchBranch;
+			scope.switchTagBranch = switchTagBranch;
             scope.loadInstanceInfo = loadInstanceInfo;
             scope.refreshInstancesInfo = refreshInstancesInfo;
             scope.deleteRuleItem = deleteRuleItem;
@@ -152,12 +153,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 							namespace.hasTag = true;
 							namespace.tags = [];
 							initPermission(namespace);
-	                        initUserOperateTagBranchScene(namespace);
 
 							angular.forEach(result, function(ns){
 							    var tag = ns;
 								tag.isBranch = true;
-								tag.branchName = ns.clusterName;
+								tag.branchName = ns.baseInfo.clusterName;
 								tag.parentNamespace = namespace;
 								tag.viewType = namespace_view_type.TABLE;
 	                            tag.isPropertiesFormat = namespace.format == 'properties';
@@ -169,6 +169,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 	                            tag.displayControl = {
 	                                show: true
 	                            };
+								initUserOperateTagBranchScene(ns);
 								generateNamespaceId(tag);
 	                            initBranchItems(tag);
 	                            loadInstanceInfo(tag);
@@ -465,13 +466,13 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 
 				function initUserOperateTagBranchScene(namespace) {
                     var operateBranchStorage = JSON.parse(localStorage.getItem(operate_tag_branch_storage_key));
-                    var namespaceId = [scope.appId, scope.env, scope.cluster, namespace.baseInfo.namespaceName].join(
+                    var namespaceId = [scope.appId, scope.env, scope.cluster, namespace.baseInfo.namespaceName, namespace.baseInfo.clusterName].join(
                         "+");
                     if (!operateBranchStorage) {
                         operateBranchStorage = {};
                     }
                     if (!operateBranchStorage[namespaceId]) {
-                        operateBranchStorage[namespaceId] = namespace.branchName;
+                        operateBranchStorage[namespaceId] = namespace.baseInfo.clusterName;
                     }
 
                     localStorage.setItem(operate_tag_branch_storage_key, JSON.stringify(operateBranchStorage));
@@ -479,26 +480,6 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                     switchTagBranch(operateBranchStorage[namespaceId], false);
 
                 }
-
-				function switchTagBranch(branchName, forceShowBody) {
-
-	                if (forceShowBody) {
-	                    scope.showNamespaceBody = true;
-	                }
-	
-	                scope.namespace.displayControl.currentOperateBranch = branchName;
-	
-	                //save to local storage
-	                var operateBranchStorage = JSON.parse(localStorage.getItem(operate_tag_branch_storage_key));
-	                if (!operateBranchStorage) {
-	                    return;
-	                }
-	                var namespaceId = [scope.appId, scope.env, scope.cluster, scope.namespace.baseInfo.namespaceName].join(
-	                    "+");
-	                operateBranchStorage[namespaceId] = branchName;
-	                localStorage.setItem(operate_tag_branch_storage_key, JSON.stringify(operateBranchStorage));
-	
-	            }
 
                 function initUserOperateBranchScene(namespace) {
                     var operateBranchStorage = JSON.parse(localStorage.getItem(operate_branch_storage_key));
@@ -541,6 +522,26 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                     }, function (result) {
 
                     });
+            }
+
+			function switchTagBranch(branchName, forceShowBody) {
+
+                if (forceShowBody) {
+                    scope.showNamespaceBody = true;
+                }
+
+                scope.namespace.displayControl.currentOperateBranch = branchName;
+
+                //save to local storage
+                var operateBranchStorage = JSON.parse(localStorage.getItem(operate_tag_branch_storage_key));
+                if (!operateBranchStorage) {
+                    return;
+                }
+                var namespaceId = [scope.appId, scope.env, scope.cluster, scope.namespace.baseInfo.namespaceName, branchName].join(
+                    "+");
+                operateBranchStorage[namespaceId] = branchName;
+                localStorage.setItem(operate_tag_branch_storage_key, JSON.stringify(operateBranchStorage));
+
             }
 
             function switchBranch(branchName, forceShowBody) {

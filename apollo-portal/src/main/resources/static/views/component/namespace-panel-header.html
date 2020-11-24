@@ -32,7 +32,7 @@
 </header>
 
 <!--branch nav-->
-<header class="panel-heading second-panel-heading" ng-show="namespace.initialized && namespace.hasBranch">
+<header class="panel-heading second-panel-heading" ng-show="namespace.initialized && (namespace.hasBranch || namespace.hasTag)">
     <div class="row">
         <div class="col-md-8 pull-left">
             <ul class="nav nav-tabs">
@@ -43,14 +43,21 @@
                         {{'Component.Namespace.Header.Title.Master' | translate }}
                     </a>
                 </li>
-                <li role="presentation">
+                <li role="presentation" ng-show="namespace.hasBranch">
                     <a ng-class="{'node_active': namespace.displayControl.currentOperateBranch != 'master'}"
                         ng-click="switchBranch(namespace.branchName, true)">
                         <img src="img/branch.png">
                         {{'Component.Namespace.Header.Title.Grayscale' | translate }}
                     </a>
                 </li>
-
+				<li role="presentation" ng-repeat="tag in namespace.tags" ng-show="namespace.hasTag">
+                    <a ng-class="{'node_active': namespace.displayControl.currentOperateBranch != 'master'}"
+                        ng-click="switchTagBranch(tag.branchName, true)">
+                        <img src="img/branch.png">
+<!--                         {{'Component.Namespace.Header.Title.Grayscale' | translate }} -->
+                        {{tag.branchName}}
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

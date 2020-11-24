@@ -28,7 +28,7 @@
 </section>
 <!--master panel body-->
 <section class="master-panel-body" ng-if="namespace.initialized &&
-         (namespace.hasBranch && namespace.displayControl.currentOperateBranch == 'master' || !namespace.hasBranch)">
+         ((namespace.hasBranch || namespace.hasTag) && namespace.displayControl.currentOperateBranch == 'master' || !(namespace.hasBranch || namespace.hasTag))">
     <!--main header-->
     <header class="panel-heading">
         <div class="row">
@@ -705,12 +705,12 @@
             </div>
 
             <!--text view-->
-            <!--鍙妯″紡涓嬬殑鏂囨湰鍐呭,涓嶆浛鎹㈡崲琛岀-->
+            <!--閸欘亣顕板Ο鈥崇础娑撳娈戦弬鍥ㄦ拱閸愬懎顔�,娑撳秵娴涢幑銏″床鐞涘瞼顑�-->
             <div ui-ace="aceConfig" readonly="true" class="form-control no-radius"
                 rows="{{namespace.itemCnt < 10 ? 10: namespace.itemCnt>20 ? 20:namespace.itemCnt}}"
                 ng-show="namespace.viewType == 'text' && !namespace.isTextEditing" ng-model="namespace.text">
             </div>
-            <!--缂栬緫鐘舵�佷笅鐨勬枃鏈唴瀹�,浼氳繃婊ゆ帀鎹㈣绗�-->
+            <!--缂傛牞绶悩鑸碉拷浣风瑓閻ㄥ嫭鏋冮張顒�鍞寸�癸拷,娴兼俺绻冨銈嗗竴閹广垼顢戠粭锟�-->
             <div ui-ace="aceConfig" class="form-control no-radius"
                 rows="{{namespace.itemCnt < 10 ? 10: namespace.itemCnt>20 ? 20:namespace.itemCnt}}"
                 ng-show="namespace.viewType == 'text' && namespace.isTextEditing" ng-disabled="!namespace.isTextEditing"
@@ -757,7 +757,7 @@
                             </thead>
                             <tbody>
 
-                                <!--鍏煎鑰佹暟鎹�,涓嶆樉绀篿tem绫诲瀷涓虹┖琛屽拰娉ㄩ噴鐨刬tem-->
+                                <!--閸忕厧顔愰懓浣规殶閹癸拷,娑撳秵妯夌粈绡縯em缁鐎锋稉铏光敄鐞涘苯鎷板▔銊╁櫞閻ㄥ埇tem-->
                                 <tr ng-repeat="item in commits.changeSets.createItems" ng-show="item.key">
                                     <td width="6%">
                                         {{'Component.Namespace.Master.Items.Body.HistoryView.NewAdded' | translate }}

@@ -1,5 +1,6 @@
 package com.ctrip.framework.apollo.biz.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +86,18 @@ public class NamespaceTagService {
   }
 
   public List<Namespace> findTagBranchs(String appId, String parentClusterName, String namespaceName) {
-    return namespaceService.findChildNamespaces(appId, parentClusterName, namespaceName);
+	List<Namespace> result = new ArrayList<Namespace>();
+	List<Namespace> nps = namespaceService.findChildNamespaces(appId, parentClusterName, namespaceName);
+	if(nps != null && !nps.isEmpty()) {
+		for(Namespace np : nps) {
+			List<TagReleaseRule> tagRules = tagReleaseRuleRepository.findByAppIdAndClusterNameAndNamespaceName(appId, np.getClusterName(), namespaceName);
+			if(tagRules != null && !tagRules.isEmpty()) {
+				result.add(np);
+			}
+		}
+	}
+	return result;
+//    return namespaceService.findChildNamespaces(appId, parentClusterName, namespaceName);
   }
   
   public Namespace findTagBranch(String appId, String parentClusterName, String namespaceName, String tag) {

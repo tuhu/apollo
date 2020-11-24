@@ -1,5 +1,6 @@
 package com.ctrip.framework.apollo.biz.service;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.context.annotation.Lazy;
@@ -11,7 +12,9 @@ import com.ctrip.framework.apollo.biz.entity.Cluster;
 import com.ctrip.framework.apollo.biz.entity.GrayReleaseRule;
 import com.ctrip.framework.apollo.biz.entity.Namespace;
 import com.ctrip.framework.apollo.biz.entity.Release;
+import com.ctrip.framework.apollo.biz.entity.TagReleaseRule;
 import com.ctrip.framework.apollo.biz.repository.GrayReleaseRuleRepository;
+import com.ctrip.framework.apollo.biz.repository.TagReleaseRuleRepository;
 import com.ctrip.framework.apollo.common.constants.NamespaceBranchStatus;
 import com.ctrip.framework.apollo.common.constants.ReleaseOperation;
 import com.ctrip.framework.apollo.common.constants.ReleaseOperationContext;
@@ -25,6 +28,7 @@ public class NamespaceBranchService {
 
   private final AuditService auditService;
   private final GrayReleaseRuleRepository grayReleaseRuleRepository;
+  private final TagReleaseRuleRepository  tagReleaseRuleRepository;
   private final ClusterService clusterService;
   private final ReleaseService releaseService;
   private final NamespaceService namespaceService;
@@ -33,12 +37,14 @@ public class NamespaceBranchService {
   public NamespaceBranchService(
       final AuditService auditService,
       final GrayReleaseRuleRepository grayReleaseRuleRepository,
+      final TagReleaseRuleRepository  tagReleaseRuleRepository,
       final ClusterService clusterService,
       final @Lazy ReleaseService releaseService,
       final NamespaceService namespaceService,
       final ReleaseHistoryService releaseHistoryService) {
     this.auditService = auditService;
     this.grayReleaseRuleRepository = grayReleaseRuleRepository;
+    this.tagReleaseRuleRepository = tagReleaseRuleRepository;
     this.clusterService = clusterService;
     this.releaseService = releaseService;
     this.namespaceService = namespaceService;
@@ -69,7 +75,18 @@ public class NamespaceBranchService {
   }
 
   public Namespace findBranch(String appId, String parentClusterName, String namespaceName) {
-    return namespaceService.findChildNamespace(appId, parentClusterName, namespaceName);
+	List<Namespace> nps = namespaceService.findChildNamespaces(appId, parentClusterName, namespaceName);
+	if(nps != null && !nps.isEmpty()) {
+		for(Namespace np : nps) {
+			List<TagReleaseRule> tagRules = tagReleaseRuleRepository.findByAppIdAndClusterNameAndNamespaceName(appId, np.getClusterName(), namespaceName);
+			if(tagRules != null && !tagRules.isEmpty()) {
+				continue;
+			}
+			return np;
+		}
+	}
+	return null;
+//    return namespaceService.findChildNamespace(appId, parentClusterName, namespaceName);
   }
   
   public GrayReleaseRule findBranchGrayRules(String appId, String clusterName, String namespaceName,
