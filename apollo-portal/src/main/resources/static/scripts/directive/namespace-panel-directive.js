@@ -152,11 +152,10 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 
 							namespace.hasTag = true;
 							namespace.tags = [];
-							initPermission(namespace);
 
 							angular.forEach(result, function(ns){
 							    var tag = ns;
-								tag.isBranch = true;
+								tag.isTag = true;
 								tag.branchName = ns.baseInfo.clusterName;
 								tag.parentNamespace = namespace;
 								tag.viewType = namespace_view_type.TABLE;
@@ -177,6 +176,8 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 								namespace.tags.push(tag);
 								
 							})
+							
+							initPermission(namespace);
 							
 						});
 						
@@ -364,6 +365,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                         if (namespace.branch) {
                                             namespace.branch.hasModifyPermission = result.hasPermission;
                                         }
+										if(namespace.tags && namespace.tags.length > 0) {
+											angular.forEach(namespace.tags, function(ns){
+												ns.hasModifyPermission = result.hasPermission;
+											})
+										}
                                     });
                             }
                             else {
@@ -372,6 +378,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                 if (namespace.branch) {
                                     namespace.branch.hasModifyPermission = result.hasPermission;
                                 }
+								if(namespace.tags && namespace.tags.length > 0) {
+									angular.forEach(namespace.tags, function(ns){
+										ns.hasModifyPermission = result.hasPermission;
+									})
+								}
                             }
                         });
 
@@ -391,6 +402,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                         if (namespace.branch) {
                                             namespace.branch.hasReleasePermission = result.hasPermission;
                                         }
+										if(namespace.tags && namespace.tags.length > 0) {
+											angular.forEach(namespace.tags, function(ns){
+												ns.hasReleasePermission = result.hasPermission;
+											})
+										}
                                     });
                             }
                             else {
@@ -399,6 +415,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                 if (namespace.branch) {
                                     namespace.branch.hasReleasePermission = result.hasPermission;
                                 }
+								if(namespace.tags && namespace.tags.length > 0) {
+									angular.forEach(namespace.tags, function(ns){
+										ns.hasReleasePermission = result.hasPermission;
+									})
+								}
                             }
                         });
                 }
@@ -998,7 +1019,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                     return;
                 }
 
-                if (namespace.isBranch) {
+                if (namespace.isBranch || namespace.isTag) {
                     namespace.mergeAndPublish = false;
                 }
 
