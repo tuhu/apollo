@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ctrip.framework.apollo.common.dto.NamespaceDTO;
+import com.ctrip.framework.apollo.common.dto.TagNamespaceDTO;
 import com.ctrip.framework.apollo.portal.api.AdminServiceAPI;
 import com.ctrip.framework.apollo.portal.component.ItemsComparator;
 import com.ctrip.framework.apollo.portal.constant.TracerEventType;
 import com.ctrip.framework.apollo.portal.entity.bo.NamespaceBO;
+import com.ctrip.framework.apollo.portal.entity.bo.TagNamespaceBO;
 import com.ctrip.framework.apollo.portal.environment.Env;
 import com.ctrip.framework.apollo.portal.spi.UserInfoHolder;
 import com.ctrip.framework.apollo.tracer.Tracer;
@@ -72,28 +74,55 @@ public class NamespaceTagService {
 				  String.format("%s+%s+%s+%s", appId, env, clusterName, namespaceName));
 	  }
 	  
-	  public NamespaceDTO findTagBranchBaseInfo(String appId, Env env, String clusterName, String namespaceName, String tag) {
+	  public TagNamespaceDTO findTagBranchBaseInfo(String appId, Env env, String clusterName, String namespaceName, String tag) {
 	    return namespaceTagAPI.findTagBranch(appId, env, clusterName, namespaceName, tag);
 	  }
 	  
-	  public NamespaceBO findTagBranch(String appId, Env env, String clusterName, String namespaceName, String tag) {
-	    NamespaceDTO namespaceDTO = findTagBranchBaseInfo(appId, env, clusterName, namespaceName, tag);
+	  public TagNamespaceBO findTagBranch(String appId, Env env, String clusterName, String namespaceName, String tag) {
+		  TagNamespaceDTO namespaceDTO = findTagBranchBaseInfo(appId, env, clusterName, namespaceName, tag);
 	    if (namespaceDTO == null) {
 	      return null;
 	    }
-	    return namespaceService.loadNamespaceBO(appId, env, namespaceDTO.getClusterName(), namespaceName);
+	    NamespaceBO nbo = namespaceService.loadNamespaceBO(appId, env, namespaceDTO.getClusterName(), namespaceName);
+	    if (nbo != null) {
+			  TagNamespaceBO tno = new TagNamespaceBO();
+			  
+			  tno.setBaseInfo(namespaceDTO);
+			  
+			  tno.setComment(nbo.getComment());
+			  tno.setConfigHidden(nbo.isConfigHidden());
+			  tno.setFormat(nbo.getFormat());
+			  tno.setItemModifiedCnt(nbo.getItemModifiedCnt());
+			  tno.setItems(nbo.getItems());
+			  tno.setParentAppId(nbo.getParentAppId());
+			  tno.setPublic(nbo.isPublic());
+			  
+			  return tno;
+		  }
+	    return null;
 	  }
 
-	  public List<NamespaceBO> findTagBranchs(String appId, Env env, String clusterName, String namespaceName) {
-		  List<NamespaceDTO> dtos = namespaceTagAPI.findTagBranchs(appId, env, clusterName, namespaceName);
+	  public List<TagNamespaceBO> findTagBranchs(String appId, Env env, String clusterName, String namespaceName) {
+		  List<TagNamespaceDTO> dtos = namespaceTagAPI.findTagBranchs(appId, env, clusterName, namespaceName);
 		  if(dtos == null || dtos.isEmpty()) {
 			  return null;
 		  }
-		  List<NamespaceBO> result = new ArrayList<NamespaceBO>();
-		  for(NamespaceDTO namespaceDTO : dtos) {
+		  List<TagNamespaceBO> result = new ArrayList<TagNamespaceBO>();
+		  for(TagNamespaceDTO namespaceDTO : dtos) {
 			  NamespaceBO nbo = namespaceService.loadNamespaceBO(appId, env, namespaceDTO.getClusterName(), namespaceName);
-			  if (namespaceDTO != null) {
-				  result.add(nbo);
+			  if (nbo != null) {
+				  TagNamespaceBO tno = new TagNamespaceBO();
+				  
+				  tno.setBaseInfo(namespaceDTO);
+				  
+				  tno.setComment(nbo.getComment());
+				  tno.setConfigHidden(nbo.isConfigHidden());
+				  tno.setFormat(nbo.getFormat());
+				  tno.setItemModifiedCnt(nbo.getItemModifiedCnt());
+				  tno.setItems(nbo.getItems());
+				  tno.setParentAppId(nbo.getParentAppId());
+				  tno.setPublic(nbo.isPublic());
+				  result.add(tno);
 			  }
 		  }
 		  return result;

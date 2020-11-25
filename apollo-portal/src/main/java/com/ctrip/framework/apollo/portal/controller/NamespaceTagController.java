@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ctrip.framework.apollo.common.dto.NamespaceDTO;
 import com.ctrip.framework.apollo.portal.component.PermissionValidator;
 import com.ctrip.framework.apollo.portal.component.config.PortalConfig;
-import com.ctrip.framework.apollo.portal.entity.bo.NamespaceBO;
+import com.ctrip.framework.apollo.portal.entity.bo.TagNamespaceBO;
 import com.ctrip.framework.apollo.portal.environment.Env;
 import com.ctrip.framework.apollo.portal.service.NamespaceTagService;
 import com.ctrip.framework.apollo.portal.service.ReleaseService;
@@ -41,13 +41,13 @@ public class NamespaceTagController {
   }
   
   @GetMapping("/apps/{appId}/envs/{env}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branchs")
-  public List<NamespaceBO> findTagBranchs(@PathVariable String appId,
+  public List<TagNamespaceBO> findTagBranchs(@PathVariable String appId,
                                 @PathVariable String env,
                                 @PathVariable String clusterName,
                                 @PathVariable String namespaceName) {
-	  List<NamespaceBO> namespaceBOs = namespaceTagService.findTagBranchs(appId, Env.valueOf(env), clusterName, namespaceName);
+	  List<TagNamespaceBO> namespaceBOs = namespaceTagService.findTagBranchs(appId, Env.valueOf(env), clusterName, namespaceName);
 	  if(namespaceBOs != null) {
-		  for(NamespaceBO namespaceBO : namespaceBOs) {
+		  for(TagNamespaceBO namespaceBO : namespaceBOs) {
 			  if (namespaceBO != null && permissionValidator.shouldHideConfigToCurrentUser(appId, env, namespaceName)) {
 				  namespaceBO.hideItems();
 		      }
@@ -58,12 +58,12 @@ public class NamespaceTagController {
   }
   
   @GetMapping("/apps/{appId}/envs/{env}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/:tag")
-  public NamespaceBO findTagBranch(@PathVariable String appId,
+  public TagNamespaceBO findTagBranch(@PathVariable String appId,
                                 @PathVariable String env,
                                 @PathVariable String clusterName,
                                 @PathVariable String namespaceName,
                                 @PathVariable String tag) {
-	  NamespaceBO namespaceBO = namespaceTagService.findTagBranch(appId, Env.valueOf(env), clusterName, namespaceName, tag);
+	  TagNamespaceBO namespaceBO = namespaceTagService.findTagBranch(appId, Env.valueOf(env), clusterName, namespaceName, tag);
 	  
 	  if (namespaceBO != null && permissionValidator.shouldHideConfigToCurrentUser(appId, env, namespaceName)) {
 		  namespaceBO.hideItems();

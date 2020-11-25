@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ctrip.framework.apollo.biz.entity.Namespace;
+import com.ctrip.framework.apollo.biz.entity.TagNamespace;
 import com.ctrip.framework.apollo.biz.message.MessageSender;
 import com.ctrip.framework.apollo.biz.message.Topics;
 import com.ctrip.framework.apollo.biz.service.NamespaceService;
@@ -19,6 +20,7 @@ import com.ctrip.framework.apollo.biz.service.NamespaceTagService;
 import com.ctrip.framework.apollo.biz.utils.ReleaseMessageKeyGenerator;
 import com.ctrip.framework.apollo.common.constants.NamespaceBranchStatus;
 import com.ctrip.framework.apollo.common.dto.NamespaceDTO;
+import com.ctrip.framework.apollo.common.dto.TagNamespaceDTO;
 import com.ctrip.framework.apollo.common.exception.BadRequestException;
 import com.ctrip.framework.apollo.common.utils.BeanUtils;
 
@@ -70,26 +72,26 @@ public class NamespaceTagController {
   }
 
   @GetMapping("/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branches")
-  public List<NamespaceDTO> loadNamespaceTagBranchs(@PathVariable String appId, @PathVariable String clusterName,
+  public List<TagNamespaceDTO> loadNamespaceTagBranchs(@PathVariable String appId, @PathVariable String clusterName,
                                           @PathVariable String namespaceName) {
 
     checkNamespace(appId, clusterName, namespaceName);
 
-    List<Namespace> childNamespaces = namespaceTagService.findTagBranchs(appId, clusterName, namespaceName);
+    List<TagNamespace> childNamespaces = namespaceTagService.findTagBranchs(appId, clusterName, namespaceName);
     if (childNamespaces == null) {
       return null;
     }
     
-    List<NamespaceDTO> result = new ArrayList<NamespaceDTO>();
-    for(Namespace ns : childNamespaces) {
-    	result.add(BeanUtils.transform(NamespaceDTO.class, ns));
+    List<TagNamespaceDTO> result = new ArrayList<TagNamespaceDTO>();
+    for(TagNamespace ns : childNamespaces) {
+    	result.add(BeanUtils.transform(TagNamespaceDTO.class, ns));
     }
     
     return result;
   }
   
   @GetMapping("/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/{tag}")
-  public NamespaceDTO loadNamespaceTagBranch(@PathVariable String appId, @PathVariable String clusterName,
+  public TagNamespaceDTO loadNamespaceTagBranch(@PathVariable String appId, @PathVariable String clusterName,
                                           @PathVariable String namespaceName, @PathVariable String tag) {
 
     checkNamespace(appId, clusterName, namespaceName);
@@ -98,8 +100,20 @@ public class NamespaceTagController {
     if (childNamespace == null) {
       return null;
     }
+    
+    TagNamespace tn = new TagNamespace();
+	tn.setAppId(childNamespace.getAppId());
+	tn.setClusterName(childNamespace.getClusterName());
+	tn.setNamespaceName(childNamespace.getNamespaceName());
+	tn.setId(childNamespace.getId());
+	tn.setDeleted(childNamespace.isDeleted());
+	tn.setDataChangeCreatedBy(childNamespace.getDataChangeCreatedBy());
+	tn.setDataChangeCreatedTime(childNamespace.getDataChangeCreatedTime());
+	tn.setDataChangeLastModifiedTime(childNamespace.getDataChangeLastModifiedTime());
+	tn.setDataChangeLastModifiedBy(childNamespace.getDataChangeLastModifiedBy());
+	tn.setTag(tag);
 
-    return BeanUtils.transform(NamespaceDTO.class, childNamespace);
+    return BeanUtils.transform(TagNamespaceDTO.class, tn);
   }
 
   private void checkBranch(String appId, String clusterName, String namespaceName, String branchName) {

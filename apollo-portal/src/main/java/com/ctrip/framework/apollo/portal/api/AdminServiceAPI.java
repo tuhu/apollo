@@ -1,8 +1,12 @@
 package com.ctrip.framework.apollo.portal.api;
 
-import com.ctrip.framework.apollo.common.dto.*;
-import com.ctrip.framework.apollo.portal.environment.Env;
-import com.google.common.base.Joiner;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -14,7 +18,23 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.util.*;
+import com.ctrip.framework.apollo.common.dto.AccessKeyDTO;
+import com.ctrip.framework.apollo.common.dto.AppDTO;
+import com.ctrip.framework.apollo.common.dto.AppNamespaceDTO;
+import com.ctrip.framework.apollo.common.dto.ClusterDTO;
+import com.ctrip.framework.apollo.common.dto.CommitDTO;
+import com.ctrip.framework.apollo.common.dto.GrayReleaseRuleDTO;
+import com.ctrip.framework.apollo.common.dto.InstanceDTO;
+import com.ctrip.framework.apollo.common.dto.ItemChangeSets;
+import com.ctrip.framework.apollo.common.dto.ItemDTO;
+import com.ctrip.framework.apollo.common.dto.NamespaceDTO;
+import com.ctrip.framework.apollo.common.dto.NamespaceLockDTO;
+import com.ctrip.framework.apollo.common.dto.PageDTO;
+import com.ctrip.framework.apollo.common.dto.ReleaseDTO;
+import com.ctrip.framework.apollo.common.dto.ReleaseHistoryDTO;
+import com.ctrip.framework.apollo.common.dto.TagNamespaceDTO;
+import com.ctrip.framework.apollo.portal.environment.Env;
+import com.google.common.base.Joiner;
 
 
 @Service
@@ -487,20 +507,20 @@ public class AdminServiceAPI {
               null, NamespaceDTO.class, appId, clusterName, namespaceName, tag, operator);
     }
 
-    public NamespaceDTO findTagBranch(String appId, Env env, String clusterName,
+    public TagNamespaceDTO findTagBranch(String appId, Env env, String clusterName,
         String namespaceName, String tag) {
       return restTemplate.get(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/{tag}",
-          NamespaceDTO.class, appId, clusterName, namespaceName, tag);
+    		  TagNamespaceDTO.class, appId, clusterName, namespaceName, tag);
     }
     
-    public List<NamespaceDTO> findTagBranchs(String appId, Env env, String clusterName,
+    public List<TagNamespaceDTO> findTagBranchs(String appId, Env env, String clusterName,
         String namespaceName) {
-    	NamespaceDTO[] insts =  restTemplate.get(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branches",
-          NamespaceDTO[].class, appId, clusterName, namespaceName);
+    	TagNamespaceDTO[] insts =  restTemplate.get(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branches",
+    			TagNamespaceDTO[].class, appId, clusterName, namespaceName);
     	if(insts != null && insts.length > 0) {
     		return Arrays.asList(insts);
     	}
-    	return new ArrayList<NamespaceDTO>();
+    	return new ArrayList<TagNamespaceDTO>();
     }
 
     public void deleteTagBranch(String appId, Env env, String clusterName,

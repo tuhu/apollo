@@ -118,7 +118,8 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                 namespace.displayControl = {
                     currentOperateBranch: 'master',
                     showSearchInput: false,
-                    show: scope.showBody
+                    show: scope.showBody,
+					currentOperateType: ''
                 };
                 scope.showNamespaceBody = namespace.showNamespaceBody ? true : scope.showBody;
                 namespace.viewItems = namespace.items;
@@ -157,6 +158,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 							    var tag = ns;
 								tag.isTag = true;
 								tag.branchName = ns.baseInfo.clusterName;
+								tag.name = ns.baseInfo.tag;
 								tag.parentNamespace = namespace;
 								tag.viewType = namespace_view_type.TABLE;
 	                            tag.isPropertiesFormat = namespace.format == 'properties';
@@ -552,6 +554,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                 }
 
                 scope.namespace.displayControl.currentOperateBranch = branchName;
+				scope.namespace.displayControl.currentOperateType = 'tag';
 
                 //save to local storage
                 var operateBranchStorage = JSON.parse(localStorage.getItem(operate_tag_branch_storage_key));
@@ -574,6 +577,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                 }
 
                 scope.namespace.displayControl.currentOperateBranch = branchName;
+				scope.namespace.displayControl.currentOperateType = 'branch';
 
                 //save to local storage
                 var operateBranchStorage = JSON.parse(localStorage.getItem(operate_branch_storage_key));

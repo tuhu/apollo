@@ -12,6 +12,7 @@ import com.ctrip.framework.apollo.biz.entity.Audit;
 import com.ctrip.framework.apollo.biz.entity.Cluster;
 import com.ctrip.framework.apollo.biz.entity.Namespace;
 import com.ctrip.framework.apollo.biz.entity.Release;
+import com.ctrip.framework.apollo.biz.entity.TagNamespace;
 import com.ctrip.framework.apollo.biz.entity.TagReleaseRule;
 import com.ctrip.framework.apollo.biz.repository.TagReleaseRuleRepository;
 import com.ctrip.framework.apollo.common.constants.NamespaceBranchStatus;
@@ -85,19 +86,29 @@ public class NamespaceTagService {
     return namespaceService.save(childNamespace);
   }
 
-  public List<Namespace> findTagBranchs(String appId, String parentClusterName, String namespaceName) {
-	List<Namespace> result = new ArrayList<Namespace>();
+  public List<TagNamespace> findTagBranchs(String appId, String parentClusterName, String namespaceName) {
+	List<TagNamespace> result = new ArrayList<TagNamespace>();
 	List<Namespace> nps = namespaceService.findChildNamespaces(appId, parentClusterName, namespaceName);
 	if(nps != null && !nps.isEmpty()) {
 		for(Namespace np : nps) {
+			TagNamespace tn = new TagNamespace();
+			tn.setAppId(np.getAppId());
+			tn.setClusterName(np.getClusterName());
+			tn.setNamespaceName(np.getNamespaceName());
+			tn.setId(np.getId());
+			tn.setDeleted(np.isDeleted());
+			tn.setDataChangeCreatedBy(np.getDataChangeCreatedBy());
+			tn.setDataChangeCreatedTime(np.getDataChangeCreatedTime());
+			tn.setDataChangeLastModifiedTime(np.getDataChangeLastModifiedTime());
+			tn.setDataChangeLastModifiedBy(np.getDataChangeLastModifiedBy());
 			List<TagReleaseRule> tagRules = tagReleaseRuleRepository.findByAppIdAndClusterNameAndNamespaceName(appId, np.getClusterName(), namespaceName);
 			if(tagRules != null && !tagRules.isEmpty()) {
-				result.add(np);
+				tn.setTag(tagRules.iterator().next().getTag());
+				result.add(tn);
 			}
 		}
 	}
 	return result;
-//    return namespaceService.findChildNamespaces(appId, parentClusterName, namespaceName);
   }
   
   public Namespace findTagBranch(String appId, String parentClusterName, String namespaceName, String tag) {

@@ -203,8 +203,10 @@ public class AppNamespaceServiceWithCache implements InitializingBean {
     Set<Long> foundIds = Sets.newHashSet();
     for (AppNamespace appNamespace : appNamespaces) {
       foundIds.add(appNamespace.getId());
-      AppNamespace thatInCache = appNamespaceIdCache.get(appNamespace.getId());
-      if (thatInCache != null && appNamespace.getDataChangeLastModifiedTime().after(thatInCache
+      AppNamespace thatInCache = appNamespaceIdCache.get(appNamespace.getId());      
+      if (thatInCache != null && appNamespace.getDataChangeLastModifiedTime() != null && 
+    		  thatInCache.getDataChangeLastModifiedTime() != null &&
+    		  appNamespace.getDataChangeLastModifiedTime().after(thatInCache
           .getDataChangeLastModifiedTime())) {
         appNamespaceIdCache.put(appNamespace.getId(), appNamespace);
         String oldKey = assembleAppNamespaceKey(thatInCache);

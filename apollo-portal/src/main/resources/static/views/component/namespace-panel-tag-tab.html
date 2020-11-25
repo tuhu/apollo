@@ -1,6 +1,7 @@
 <div ng-repeat="tag in namespace.tags">
 <section class="branch-panel-body" ng-if="namespace.initialized &&
-                (namespace.hasTag && namespace.displayControl.currentOperateBranch != 'master' && namespace.displayControl.currentOperateBranch == tag.branchName)">
+                (namespace.hasTag && namespace.displayControl.currentOperateBranch != 'master' && namespace.displayControl.currentOperateBranch == tag.branchName &&
+                namespace.displayControl.currentOperateType == 'tag')">
                 
     	<!--main header-->
 	    <header class="panel-heading">
