@@ -54,8 +54,7 @@
                     <a ng-class="{'node_active': namespace.displayControl.currentOperateBranch != 'master'}"
                         ng-click="switchTagBranch(tag.branchName, true)">
                         <img src="img/branch.png">
-<!--                         {{'Component.Namespace.Header.Title.Grayscale' | translate }} -->
-                        {{tag.name}}
+                        {{tag.name}}[{{'Component.Namespace.Master.Items.Swimscale' | translate }}]
                     </a>
                 </li>
             </ul>

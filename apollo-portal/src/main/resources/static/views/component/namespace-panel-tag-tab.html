@@ -26,13 +26,13 @@
 	                    title="{{'Component.Namespace.Branch.ContinueGrayscalePublish' | translate }}"
 	                    ng-show="(namespace.hasReleasePermission || namespace.hasModifyPermission)"
 	                    ng-click="publish(tag)">
-	                    {{'Component.Namespace.Branch.GrayscalePublish' | translate }}
+	                    {{'Component.Namespace.Branch.SwimlanePublish' | translate }}
 	                </a>
 	                <a type="button" class="btn btn-warning btn-sm" data-tooltip="tooltip" data-placement="bottom"
 	                    title="{{'Component.Namespace.Branch.DiscardGrayscaleVersion' | translate }}" ng-show="(namespace.hasReleasePermission
 	                       || (!tag.latestRelease && namespace.hasModifyPermission))"
 	                    ng-click="preDeleteTag(tag)">
-	                    {{'Component.Namespace.Branch.DiscardGrayscale' | translate }}
+	                    {{'Component.Namespace.Branch.DiscardSwimlane' | translate }}
 	                </a>
 	            </div>
 	        </div>
@@ -60,7 +60,7 @@
 	                        <li role="presentation" ng-click="switchView(tag, 'instance')">
 	                            <a ng-class="{node_active:tag.viewType == 'instance'}">
 	                                <img src="img/machine.png">
-	                                {{'Component.Namespace.Branch.Tab.GrayscaleInstance' | translate }}
+	                                {{'Component.Namespace.Branch.Tab.SwimlaneInstance' | translate }}
 	                                <span class="badge badge-grey"
 	                                    ng-bind="tag.latestReleaseInstances.total"></span>
 	                            </a>
@@ -82,11 +82,11 @@
 	
 	                <div class="panel panel-default" ng-if="namespace.hasTag">
 	                    <div class="panel-heading">
-	                        {{'Component.Namespace.Branch.Body.Item' | translate }}
+	                        {{'Component.Namespace.Branch.Body.Swimlane.Item' | translate }}
 	                        <button type="button" class="btn btn-primary btn-sm pull-right" style="margin-top: -4px;"
 	                            ng-show="namespace.hasModifyPermission" ng-click="createItem(tag)">
 	                            <img src="img/plus.png">
-	                            {{'Component.Namespace.Branch.Body.AddedItem' | translate }}
+	                            {{'Component.Namespace.Branch.Body.AddedSwimlaneItem' | translate }}
 	                        </button>
 	                    </div>
 	                    <table class="table table-bordered table-striped table-hover">
@@ -107,7 +107,7 @@
 	                                    {{'Component.Namespace.Branch.Body.ItemMasterValue' | translate }}
 	                                </th>
 	                                <th>
-	                                    {{'Component.Namespace.Branch.Body.ItemGrayscaleValue' | translate }}
+	                                    {{'Component.Namespace.Branch.Body.ItemSwimlaneValue' | translate }}
 	                                </th>
 	                                <th>
 	                                    {{'Component.Namespace.Branch.Body.ItemComment' | translate }}

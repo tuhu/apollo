@@ -1,14 +1,15 @@
 package com.ctrip.framework.apollo.configservice.service.config;
 
+import java.util.Objects;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.ctrip.framework.apollo.biz.entity.Release;
 import com.ctrip.framework.apollo.biz.grayReleaseRule.GrayReleaseRulesHolder;
+import com.ctrip.framework.apollo.biz.tagReleaseRule.TagReleaseRulesHolder;
 import com.ctrip.framework.apollo.core.ConfigConsts;
 import com.ctrip.framework.apollo.core.dto.ApolloNotificationMessages;
-
 import com.google.common.base.Strings;
-
-import java.util.Objects;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Jason Song(song_s@ctrip.com)
@@ -16,6 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractConfigService implements ConfigService {
   @Autowired
   private GrayReleaseRulesHolder grayReleaseRulesHolder;
+  
+  @Autowired
+  private TagReleaseRulesHolder tagReleaseRulesHolder;
 
   @Override
   public Release loadConfig(String clientAppId, String appTag, String clientIp, String configAppId, String configClusterName,
@@ -59,9 +63,16 @@ public abstract class AbstractConfigService implements ConfigService {
       String configNamespace, ApolloNotificationMessages clientMessages) {
 	
 	Release release = null;  
+	
+	if(appTag != null && !appTag.isEmpty()) {
+		appTag = "swimlane_" + appTag;
+	}
 	  
 	if(!Strings.isNullOrEmpty(appTag)) {
-		//  code here
+		Long tagReleaseId = tagReleaseRulesHolder.findReleaseIdFromTagReleaseRule(clientAppId, appTag, configAppId, configClusterName, configNamespace);
+		if (tagReleaseId != null) {
+	      release = findActiveOne(tagReleaseId, clientMessages);
+	    }
 	}else {
 		Long grayReleaseId = grayReleaseRulesHolder.findReleaseIdFromGrayReleaseRule(clientAppId, clientIp, configAppId,
 		        configClusterName, configNamespace);
