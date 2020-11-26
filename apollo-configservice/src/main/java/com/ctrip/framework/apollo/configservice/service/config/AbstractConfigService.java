@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.ctrip.framework.apollo.biz.common.BizConstants;
 import com.ctrip.framework.apollo.biz.entity.Release;
 import com.ctrip.framework.apollo.biz.grayReleaseRule.GrayReleaseRulesHolder;
 import com.ctrip.framework.apollo.biz.tagReleaseRule.TagReleaseRulesHolder;
@@ -65,7 +66,7 @@ public abstract class AbstractConfigService implements ConfigService {
 	Release release = null;  
 	
 	if(appTag != null && !appTag.isEmpty()) {
-		appTag = "swimlane_" + appTag;
+		appTag = BizConstants.SWIMLANE_TAG_PREFIX + appTag;
 	}
 	  
 	if(!Strings.isNullOrEmpty(appTag)) {

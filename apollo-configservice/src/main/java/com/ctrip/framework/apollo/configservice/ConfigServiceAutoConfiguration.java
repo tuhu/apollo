@@ -1,8 +1,14 @@
 package com.ctrip.framework.apollo.configservice;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+
 import com.ctrip.framework.apollo.biz.config.BizConfig;
 import com.ctrip.framework.apollo.biz.grayReleaseRule.GrayReleaseRulesHolder;
 import com.ctrip.framework.apollo.biz.message.ReleaseMessageScanner;
+import com.ctrip.framework.apollo.biz.tagReleaseRule.TagReleaseRulesHolder;
 import com.ctrip.framework.apollo.configservice.controller.ConfigFileController;
 import com.ctrip.framework.apollo.configservice.controller.NotificationController;
 import com.ctrip.framework.apollo.configservice.controller.NotificationControllerV2;
@@ -12,10 +18,6 @@ import com.ctrip.framework.apollo.configservice.service.config.ConfigService;
 import com.ctrip.framework.apollo.configservice.service.config.ConfigServiceWithCache;
 import com.ctrip.framework.apollo.configservice.service.config.DefaultConfigService;
 import com.ctrip.framework.apollo.configservice.util.AccessKeyUtil;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 
 /**
  * @author Jason Song(song_s@ctrip.com)
@@ -32,6 +34,11 @@ public class ConfigServiceAutoConfiguration {
   @Bean
   public GrayReleaseRulesHolder grayReleaseRulesHolder() {
     return new GrayReleaseRulesHolder();
+  }
+  
+  @Bean
+  public TagReleaseRulesHolder tagReleaseRulesHolder() {
+    return new TagReleaseRulesHolder();
   }
 
   @Bean
@@ -65,6 +72,7 @@ public class ConfigServiceAutoConfiguration {
     private final ConfigFileController configFileController;
     private final NotificationControllerV2 notificationControllerV2;
     private final GrayReleaseRulesHolder grayReleaseRulesHolder;
+    private final TagReleaseRulesHolder tagReleaseRulesHolder;
     private final ReleaseMessageServiceWithCache releaseMessageServiceWithCache;
     private final ConfigService configService;
 
@@ -73,12 +81,14 @@ public class ConfigServiceAutoConfiguration {
         final ConfigFileController configFileController,
         final NotificationControllerV2 notificationControllerV2,
         final GrayReleaseRulesHolder grayReleaseRulesHolder,
+        final TagReleaseRulesHolder tagReleaseRulesHolder,
         final ReleaseMessageServiceWithCache releaseMessageServiceWithCache,
         final ConfigService configService) {
       this.notificationController = notificationController;
       this.configFileController = configFileController;
       this.notificationControllerV2 = notificationControllerV2;
       this.grayReleaseRulesHolder = grayReleaseRulesHolder;
+      this.tagReleaseRulesHolder = tagReleaseRulesHolder;
       this.releaseMessageServiceWithCache = releaseMessageServiceWithCache;
       this.configService = configService;
     }
@@ -90,6 +100,7 @@ public class ConfigServiceAutoConfiguration {
       releaseMessageScanner.addMessageListener(releaseMessageServiceWithCache);
       //1. handle gray release rule
       releaseMessageScanner.addMessageListener(grayReleaseRulesHolder);
+      releaseMessageScanner.addMessageListener(tagReleaseRulesHolder);
       //2. handle server cache
       releaseMessageScanner.addMessageListener(configService);
       releaseMessageScanner.addMessageListener(configFileController);

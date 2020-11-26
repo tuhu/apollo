@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ctrip.framework.apollo.biz.common.BizConstants;
 import com.ctrip.framework.apollo.biz.entity.Audit;
 import com.ctrip.framework.apollo.biz.entity.Cluster;
 import com.ctrip.framework.apollo.biz.entity.Namespace;
@@ -73,6 +74,9 @@ public class NamespaceTagService {
     TagReleaseRule rule = new TagReleaseRule();
     rule.setBranchStatus(NamespaceBranchStatus.ACTIVE);
     rule.setReleaseId(0l);
+    if(!tag.startsWith(BizConstants.SWIMLANE_TAG_PREFIX)) {
+    	tag = BizConstants.SWIMLANE_TAG_PREFIX + tag;
+    }
     rule.setTag(tag);
     rule.setAppId(appId);
     rule.setClusterName(createdChildCluster.getName());

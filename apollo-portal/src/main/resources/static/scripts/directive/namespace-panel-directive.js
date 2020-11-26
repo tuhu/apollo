@@ -158,7 +158,13 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 							    var tag = ns;
 								tag.isTag = true;
 								tag.branchName = ns.baseInfo.clusterName;
-								tag.name = ns.baseInfo.tag;
+								
+								var tagName = ns.baseInfo.tag;
+								if(tagName.indexOf("swimlane_") != -1) {
+									tagName = tagName.substring(9, tagName.length);
+								}
+								
+								tag.name = tagName;
 								tag.parentNamespace = namespace;
 								tag.viewType = namespace_view_type.TABLE;
 	                            tag.isPropertiesFormat = namespace.format == 'properties';
