@@ -23,6 +23,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
             preCreateBranch: '=',
             preDeleteBranch: '=',
 			preCreateTag: '=',
+			preDeleteTag: '=',
             showMergeAndPublishGrayTips: '=',
             showBody: "=?",
             lazyLoad: "=?"

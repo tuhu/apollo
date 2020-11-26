@@ -18,7 +18,7 @@ appService.service('NamespaceTagService', ['$resource', '$q', 'AppUtil', functio
         delete_tag: {
             method: 'DELETE',
             isArray: false,
-            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/tag/branchs/:branchName'
+            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/tag/branch/:branchName'
         }
     });
 
@@ -72,15 +72,14 @@ appService.service('NamespaceTagService', ['$resource', '$q', 'AppUtil', functio
         return d.promise;
     }
 
-    function delete_tag(appId, env, clusterName, namespaceName, branchName, tag) {
+    function delete_tag(appId, env, clusterName, namespaceName, branchName) {
         var d = $q.defer();
         resource.delete_tag({
                                    appId: appId,
                                    env: env,
                                    clusterName: clusterName,
                                    namespaceName: namespaceName,
-                                   branchName: branchName,
-								   tag: tag	
+                                   branchName: branchName
                                },
                                function (result) {
                                    d.resolve(result);

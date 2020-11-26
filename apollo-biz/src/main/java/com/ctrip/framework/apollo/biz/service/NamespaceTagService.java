@@ -164,7 +164,7 @@ public class NamespaceTagService {
     long latestBranchReleaseId = latestBranchRelease != null ? latestBranchRelease.getId() : 0;
 
     TagReleaseRule oldRules = tagReleaseRuleRepository
-	        .findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
+	        .findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, toDeleteCluster.getName(), namespaceName, branchName);
     
     if (oldRules != null) {
     	tagReleaseRuleRepository.delete(oldRules);
@@ -173,11 +173,8 @@ public class NamespaceTagService {
     //delete branch cluster
     clusterService.delete(toDeleteCluster.getId(), operator);
 
-    int releaseOperation = branchStatus == NamespaceBranchStatus.MERGED ? ReleaseOperation
-        .GRAY_RELEASE_DELETED_AFTER_MERGE : ReleaseOperation.ABANDON_GRAY_RELEASE;
-
     releaseHistoryService.createReleaseHistory(appId, clusterName, namespaceName, branchName, latestBranchReleaseId,
-        latestBranchReleaseId, releaseOperation, null, operator);
+        latestBranchReleaseId, ReleaseOperation.ABANDON_TAG_RELEASE, null, operator);
 
     auditService.audit("Tag", toDeleteCluster.getId(), Audit.OP.DELETE, operator);
   }
