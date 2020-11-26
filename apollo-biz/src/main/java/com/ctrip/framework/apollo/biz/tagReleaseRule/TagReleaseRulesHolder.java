@@ -171,7 +171,7 @@ public class TagReleaseRulesHolder implements ReleaseMessageListener, Initializi
         continue;
       }
       String key = assembleTagReleaseRuleKey(TagReleaseRule.getAppId(), TagReleaseRule
-          .getClusterName(), TagReleaseRule.getNamespaceName());
+          .getParentClusterName(), TagReleaseRule.getNamespaceName());
       //create a new list to avoid ConcurrentModificationException
       List<TagReleaseRuleCache> rules = Lists.newArrayList(TagReleaseRuleCache.get(key));
       TagReleaseRuleCache oldRule = null;

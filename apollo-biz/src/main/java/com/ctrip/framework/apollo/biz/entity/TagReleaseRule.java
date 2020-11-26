@@ -17,6 +17,9 @@ public class TagReleaseRule extends BaseEntity{
 
   @Column(name = "appId", nullable = false)
   private String appId;
+  
+  @Column(name = "ParentClusterName", nullable = false)
+  private String parentClusterName;
 
   @Column(name = "ClusterName", nullable = false)
   private String clusterName;
@@ -43,9 +46,17 @@ public class TagReleaseRule extends BaseEntity{
   public void setAppId(String appId) {
     this.appId = appId;
   }
-
+  
+  public String getParentClusterName() {
+	return parentClusterName;
+  }
+	
+  public void setParentClusterName(String parentClusterName) {
+	this.parentClusterName = parentClusterName;
+  }
+	
   public String getClusterName() {
-    return clusterName;
+	return clusterName;
   }
 
   public void setClusterName(String clusterName) {

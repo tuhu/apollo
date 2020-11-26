@@ -2,7 +2,6 @@ package com.ctrip.framework.apollo.biz.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -18,11 +17,9 @@ import com.ctrip.framework.apollo.biz.entity.TagReleaseRule;
 import com.ctrip.framework.apollo.biz.repository.TagReleaseRuleRepository;
 import com.ctrip.framework.apollo.common.constants.NamespaceBranchStatus;
 import com.ctrip.framework.apollo.common.constants.ReleaseOperation;
-import com.ctrip.framework.apollo.common.constants.ReleaseOperationContext;
 import com.ctrip.framework.apollo.common.exception.BadRequestException;
 import com.ctrip.framework.apollo.common.exception.ServiceException;
 import com.ctrip.framework.apollo.common.utils.UniqueKeyGenerator;
-import com.google.common.collect.Maps;
 
 @Service
 public class NamespaceTagService {
@@ -79,6 +76,7 @@ public class NamespaceTagService {
     }
     rule.setTag(tag);
     rule.setAppId(appId);
+    rule.setParentClusterName(parentClusterName);
     rule.setClusterName(createdChildCluster.getName());
     rule.setNamespaceName(namespaceName);
     rule.setBranchName(createdChildCluster.getName());
@@ -122,42 +120,6 @@ public class NamespaceTagService {
   public TagReleaseRule findBranchTagRules(String appId, String clusterName, String namespaceName,
           String branchName) {	  
 	  return tagReleaseRuleRepository.findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
-  }
-  
-
-  public void updateBranchTagRules(String appId, String clusterName, String namespaceName,
-          String branchName, TagReleaseRule newRules) {
-	  doUpdateBranchTagRule(appId, clusterName, namespaceName, branchName, newRules, true, ReleaseOperation.APPLY_TAG_RULES);
-  }
-  
-  private void doUpdateBranchTagRule(String appId, String clusterName, String namespaceName,
-          String branchName, TagReleaseRule newRules, boolean recordReleaseHistory, int releaseOperation) {
-	  TagReleaseRule oldRules = tagReleaseRuleRepository
-		        .findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
-
-		    Release latestBranchRelease = releaseService.findLatestActiveRelease(appId, branchName, namespaceName);
-
-		    long latestBranchReleaseId = latestBranchRelease != null ? latestBranchRelease.getId() : 0;
-
-		    newRules.setReleaseId(latestBranchReleaseId);
-
-		    tagReleaseRuleRepository.save(newRules);
-
-		    //delete old rules
-		    if (oldRules != null) {
-		    	tagReleaseRuleRepository.delete(oldRules);
-		    }
-
-		    if (recordReleaseHistory) {
-		      Map<String, Object> releaseOperationContext = Maps.newHashMap();
-		      releaseOperationContext.put(ReleaseOperationContext.RULES, newRules.getTag());
-		      if (oldRules != null) {
-		        releaseOperationContext.put(ReleaseOperationContext.OLD_RULES,
-		        		oldRules.getTag());
-		      }
-		      releaseHistoryService.createReleaseHistory(appId, clusterName, namespaceName, branchName, latestBranchReleaseId,
-		          latestBranchReleaseId, releaseOperation, releaseOperationContext, newRules.getDataChangeLastModifiedBy());
-		    }
   }
 
   @Transactional

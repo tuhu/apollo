@@ -53,6 +53,7 @@ public class ReleaseService {
   private final NamespaceLockService namespaceLockService;
   private final NamespaceService namespaceService;
   private final NamespaceBranchService namespaceBranchService;
+  private final NamespaceTagService namespaceTagService;
   private final ReleaseHistoryService releaseHistoryService;
   private final ItemSetService itemSetService;
 
@@ -63,6 +64,7 @@ public class ReleaseService {
       final NamespaceLockService namespaceLockService,
       final NamespaceService namespaceService,
       final NamespaceBranchService namespaceBranchService,
+      final NamespaceTagService namespaceTagService,
       final ReleaseHistoryService releaseHistoryService,
       final ItemSetService itemSetService) {
     this.releaseRepository = releaseRepository;
@@ -71,6 +73,7 @@ public class ReleaseService {
     this.namespaceLockService = namespaceLockService;
     this.namespaceService = namespaceService;
     this.namespaceBranchService = namespaceBranchService;
+    this.namespaceTagService = namespaceTagService;
     this.releaseHistoryService = releaseHistoryService;
     this.itemSetService = itemSetService;
   }
@@ -364,6 +367,12 @@ public class ReleaseService {
                                                                                   childNamespace.getNamespaceName(),
                                                                                   childNamespace.getClusterName(),
                                                                                   release.getId(), operator);
+    
+    namespaceTagService.updateTagRulesReleaseId(childNamespace.getAppId(),
+            parentNamespace.getClusterName(),
+            childNamespace.getNamespaceName(),
+            childNamespace.getClusterName(),
+            release.getId(), operator);
 
     if (grayReleaseRule != null) {
       releaseOperationContext.put(ReleaseOperationContext.RULES, GrayReleaseRuleItemTransformer
