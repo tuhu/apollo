@@ -127,28 +127,20 @@ public class NamespaceTagService {
                                    String namespaceName, String branchName,
                                    long latestReleaseId, String operator) {
 	  TagReleaseRule oldRules = tagReleaseRuleRepository.
-        findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
+			  findTopByAppIdAndParentClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
 
     if (oldRules == null) {
       return null;
     }
+    
+    oldRules.setBranchStatus(NamespaceBranchStatus.ACTIVE);
+    oldRules.setReleaseId(latestReleaseId);
+    oldRules.setDataChangeCreatedBy(operator);
+    oldRules.setDataChangeLastModifiedBy(operator);
 
-    TagReleaseRule newRules = new TagReleaseRule();
-    newRules.setBranchStatus(NamespaceBranchStatus.ACTIVE);
-    newRules.setReleaseId(latestReleaseId);
-    newRules.setTag(oldRules.getTag());
-    newRules.setAppId(oldRules.getAppId());
-    newRules.setClusterName(oldRules.getClusterName());
-    newRules.setNamespaceName(oldRules.getNamespaceName());
-    newRules.setBranchName(oldRules.getBranchName());
-    newRules.setDataChangeCreatedBy(operator);
-    newRules.setDataChangeLastModifiedBy(operator);
+    tagReleaseRuleRepository.save(oldRules);
 
-    tagReleaseRuleRepository.save(newRules);
-
-    tagReleaseRuleRepository.delete(oldRules);
-
-    return newRules;
+    return oldRules;
   }
   
   @Transactional
