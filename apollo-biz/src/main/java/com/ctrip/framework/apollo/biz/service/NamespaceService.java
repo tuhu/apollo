@@ -247,6 +247,14 @@ public class NamespaceService {
     return findChildNamespace(appId, parentClusterName, namespaceName);
 
   }
+  
+  public List<Namespace> findChildNamespaces(Namespace parentNamespace) {
+	String appId = parentNamespace.getAppId();
+    String parentClusterName = parentNamespace.getClusterName();
+    String namespaceName = parentNamespace.getNamespaceName();
+    
+    return findChildNamespaces(appId, parentClusterName, namespaceName);
+  }
 
   public Namespace findParentNamespace(String appId, String clusterName, String namespaceName) {
     return findParentNamespace(new Namespace(appId, clusterName, namespaceName));

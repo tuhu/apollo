@@ -191,12 +191,17 @@ public class ReleaseService {
                                     releaseName, releaseComment, operator, isEmergencyPublish);
     }
 
-    Namespace childNamespace = namespaceService.findChildNamespace(namespace);
+//    Namespace childNamespace = namespaceService.findChildNamespace(namespace);
+    
+    List<Namespace> childNamespaces = namespaceService.findChildNamespaces(namespace);
 
     Release previousRelease = null;
-    if (childNamespace != null) {
-      previousRelease = findLatestActiveRelease(namespace);
-    }
+//    if (childNamespace != null) {
+//      previousRelease = findLatestActiveRelease(namespace);
+//    }
+    if (childNamespaces != null && !childNamespaces.isEmpty()) {
+        previousRelease = findLatestActiveRelease(namespace);
+      }
 
     //master release
     Map<String, Object> operationContext = Maps.newLinkedHashMap();
@@ -206,10 +211,12 @@ public class ReleaseService {
                                     operator, ReleaseOperation.NORMAL_RELEASE, operationContext);
 
     //merge to branch and auto release
-    if (childNamespace != null) {
-      mergeFromMasterAndPublishBranch(namespace, childNamespace, operateNamespaceItems,
-                                      releaseName, releaseComment, operator, previousRelease,
-                                      release, isEmergencyPublish);
+    if (childNamespaces != null && !childNamespaces.isEmpty()) {
+    	for(Namespace childNamespace : childNamespaces) {
+    		mergeFromMasterAndPublishBranch(namespace, childNamespace, operateNamespaceItems,
+                    releaseName, releaseComment, operator, previousRelease,
+                    release, isEmergencyPublish);
+    	}
     }
 
     return release;
