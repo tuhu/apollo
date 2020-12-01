@@ -558,10 +558,9 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 
                 if (forceShowBody) {
                     scope.showNamespaceBody = true;
+					scope.namespace.displayControl.currentOperateBranch = branchName;
+					scope.namespace.displayControl.currentOperateType = 'tag';
                 }
-
-                scope.namespace.displayControl.currentOperateBranch = branchName;
-				scope.namespace.displayControl.currentOperateType = 'tag';
 
                 //save to local storage
                 var operateBranchStorage = JSON.parse(localStorage.getItem(operate_tag_branch_storage_key));
@@ -581,10 +580,9 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                 }
                 if (forceShowBody) {
                     scope.showNamespaceBody = true;
+					scope.namespace.displayControl.currentOperateBranch = branchName;
+					scope.namespace.displayControl.currentOperateType = 'branch';
                 }
-
-                scope.namespace.displayControl.currentOperateBranch = branchName;
-				scope.namespace.displayControl.currentOperateType = 'branch';
 
                 //save to local storage
                 var operateBranchStorage = JSON.parse(localStorage.getItem(operate_branch_storage_key));

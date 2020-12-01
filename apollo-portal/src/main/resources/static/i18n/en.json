@@ -779,6 +779,8 @@
   "ReleaseModal.PublishFailed": "Failed to Release",
   "ReleaseModal.GrayscalePublished": "Grayscale Release Successfully",
   "ReleaseModal.GrayscalePublishFailed": "Failed to Grayscale Release",
+  "ReleaseModal.SwimlanePublished": "Swimlane Release Successfully",
+  "ReleaseModal.SwimlanePublishFailed": "Failed to Swimlane Release",
   "ReleaseModal.AllPublished": "Full Release Successfully",
   "ReleaseModal.AllPublishFailed": "Failed to Full Release",
   "Rollback.NoRollbackList": "No released history to rollback",

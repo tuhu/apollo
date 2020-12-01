@@ -44,14 +44,15 @@
                     </a>
                 </li>
                 <li role="presentation" ng-show="namespace.hasBranch">
-                    <a ng-class="{'node_active': namespace.displayControl.currentOperateBranch != 'master'}"
+                    <a ng-class="{'node_active': namespace.displayControl.currentOperateBranch != 'master'  && namespace.displayControl.currentOperateType == 'branch'}"
                         ng-click="switchBranch(namespace.branchName, true)">
                         <img src="img/branch.png">
                         {{'Component.Namespace.Header.Title.Grayscale' | translate }}
                     </a>
                 </li>
 				<li role="presentation" ng-repeat="tag in namespace.tags" ng-show="namespace.hasTag">
-                    <a ng-class="{'node_active': namespace.displayControl.currentOperateBranch != 'master'}"
+                    <a ng-class="{'node_active': namespace.displayControl.currentOperateBranch != 'master' && namespace.displayControl.currentOperateBranch == tag.branchName &&
+                namespace.displayControl.currentOperateType == 'tag'}"
                         ng-click="switchTagBranch(tag.branchName, true)">
                         <img src="img/branch.png">
                         {{tag.name}}[{{'Component.Namespace.Master.Items.Swimscale' | translate }}]

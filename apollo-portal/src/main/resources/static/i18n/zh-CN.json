@@ -779,6 +779,8 @@
   "ReleaseModal.PublishFailed": "发布失败",
   "ReleaseModal.GrayscalePublished": "灰度发布成功",
   "ReleaseModal.GrayscalePublishFailed": "灰度发布失败",
+  "ReleaseModal.SwimlanePublished": "泳道发布成功",
+  "ReleaseModal.SwimlanePublishFailed": "泳道发布失败",
   "ReleaseModal.AllPublished": "全量发布成功",
   "ReleaseModal.AllPublishFailed": "全量发布失败",
   "Rollback.NoRollbackList": "没有可以回滚的发布历史",

@@ -137,7 +137,7 @@ function releaseModalDirective($translate, toastr, AppUtil, EventManager, Releas
                     scope.isEmergencyPublish).then(
                         function (result) {
                             AppUtil.hideModal('#releaseModal');
-                            toastr.success($translate.instant('ReleaseModal.GrayscalePublished'));
+                            toastr.success($translate.instant('ReleaseModal.SwimlanePublished'));
 
                             scope.releaseBtnDisabled = false;
 
@@ -155,7 +155,7 @@ function releaseModalDirective($translate, toastr, AppUtil, EventManager, Releas
 
                         }, function (result) {
                             scope.releaseBtnDisabled = false;
-                            toastr.error(AppUtil.errorMsg(result), $translate.instant('ReleaseModal.GrayscalePublishFailed'));
+                            toastr.error(AppUtil.errorMsg(result), $translate.instant('ReleaseModal.SwimlanePublishFailed'));
 
                         });
             }

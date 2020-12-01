@@ -120,6 +120,7 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
     }
 
     function refreshSingleNamespace(namespace) {
+	
         if ($rootScope.pageContext.env == '') {
             return;
         }
@@ -131,7 +132,7 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
                 function (result) {
 
                     $scope.namespaces.forEach(function (namespace, index) {
-                        if (namespace.baseInfo.namespaceName == result.baseInfo.namespaceName) {
+						if (namespace.baseInfo.namespaceName == result.baseInfo.namespaceName) {
                             result.showNamespaceBody = true;
                             result.initialized = true;
                             result.show = namespace.show;
