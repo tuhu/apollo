@@ -249,6 +249,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                             }
                         })
 
+						if(itemModifiedCnt > 0) {
+							scope.namespace.displayControl.currentOperateBranch = branch.branchName;
+							scope.namespace.displayControl.currentOperateType = 'tag';
+						}
+
                     }
 						
 				}
@@ -348,7 +353,12 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                 }
                             }
                         })
-
+						
+						if(itemModifiedCnt > 0) {
+							scope.namespace.displayControl.currentOperateBranch = branch.baseInfo.clusterName;
+							scope.namespace.displayControl.currentOperateType = 'branch';
+						}
+						
                     }
                 }
 
