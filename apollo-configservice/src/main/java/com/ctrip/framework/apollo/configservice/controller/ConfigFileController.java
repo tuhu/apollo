@@ -1,28 +1,15 @@
 package com.ctrip.framework.apollo.configservice.controller;
 
-import com.ctrip.framework.apollo.biz.entity.ReleaseMessage;
-import com.ctrip.framework.apollo.biz.grayReleaseRule.GrayReleaseRulesHolder;
-import com.ctrip.framework.apollo.biz.message.ReleaseMessageListener;
-import com.ctrip.framework.apollo.biz.message.Topics;
-import com.ctrip.framework.apollo.configservice.util.NamespaceUtil;
-import com.ctrip.framework.apollo.configservice.util.WatchKeysUtil;
-import com.ctrip.framework.apollo.core.ConfigConsts;
-import com.ctrip.framework.apollo.core.dto.ApolloConfig;
-import com.ctrip.framework.apollo.core.utils.PropertiesUtil;
-import com.ctrip.framework.apollo.tracer.Tracer;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
-import com.google.common.cache.Weigher;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.gson.Gson;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -34,14 +21,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import com.ctrip.framework.apollo.biz.entity.ReleaseMessage;
+import com.ctrip.framework.apollo.biz.grayReleaseRule.GrayReleaseRulesHolder;
+import com.ctrip.framework.apollo.biz.message.ReleaseMessageListener;
+import com.ctrip.framework.apollo.biz.message.Topics;
+import com.ctrip.framework.apollo.biz.tagReleaseRule.TagReleaseRulesHolder;
+import com.ctrip.framework.apollo.configservice.util.NamespaceUtil;
+import com.ctrip.framework.apollo.configservice.util.WatchKeysUtil;
+import com.ctrip.framework.apollo.core.ConfigConsts;
+import com.ctrip.framework.apollo.core.dto.ApolloConfig;
+import com.ctrip.framework.apollo.core.utils.PropertiesUtil;
+import com.ctrip.framework.apollo.tracer.Tracer;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.Weigher;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.gson.Gson;
 
 /**
  * @author Jason Song(song_s@ctrip.com)
@@ -69,12 +70,14 @@ public class ConfigFileController implements ReleaseMessageListener {
   private final NamespaceUtil namespaceUtil;
   private final WatchKeysUtil watchKeysUtil;
   private final GrayReleaseRulesHolder grayReleaseRulesHolder;
+  private final TagReleaseRulesHolder tagReleaseRuleHolder;
 
   public ConfigFileController(
       final ConfigController configController,
       final NamespaceUtil namespaceUtil,
       final WatchKeysUtil watchKeysUtil,
-      final GrayReleaseRulesHolder grayReleaseRulesHolder) {
+      final GrayReleaseRulesHolder grayReleaseRulesHolder,
+      final TagReleaseRulesHolder tagReleaseRuleHolder) {
     localCache = CacheBuilder.newBuilder()
         .expireAfterWrite(EXPIRE_AFTER_WRITE, TimeUnit.MINUTES)
         .weigher((Weigher<String, String>) (key, value) -> value == null ? 0 : value.length())
@@ -103,6 +106,7 @@ public class ConfigFileController implements ReleaseMessageListener {
     this.namespaceUtil = namespaceUtil;
     this.watchKeysUtil = watchKeysUtil;
     this.grayReleaseRulesHolder = grayReleaseRulesHolder;
+    this.tagReleaseRuleHolder = tagReleaseRuleHolder;
   }
 
   @GetMapping(value = "/{appId}/{clusterName}/{namespace:.+}")
@@ -197,11 +201,11 @@ public class ConfigFileController implements ReleaseMessageListener {
       //5. Double check if this client needs to load gray release, if yes, load from db again
       //This step is mainly to avoid cache pollution
       
-      if(Strings.isNullOrEmpty(appTag)) {
-      	hasGrayReleaseRule = grayReleaseRulesHolder.hasGrayReleaseRule(appId, clientIp,
-      	        namespace);
+      if(!Strings.isNullOrEmpty(appTag)) {
+    	  hasGrayReleaseRule = tagReleaseRuleHolder.hasTagReleaseRule(appId, appTag, namespace);      	
       }else {
-      	// code here
+    	  hasGrayReleaseRule = grayReleaseRulesHolder.hasGrayReleaseRule(appId, clientIp,
+        	        namespace);
       }
       
       if (hasGrayReleaseRule) {
@@ -220,7 +224,7 @@ public class ConfigFileController implements ReleaseMessageListener {
       logger.debug("adding cache for key: {}", cacheKey);
 
       Set<String> watchedKeys =
-          watchKeysUtil.assembleAllWatchKeys(appId, clusterName, namespace, dataCenter);
+          watchKeysUtil.assembleAllWatchKeys(appId, clusterName, namespace, dataCenter, appTag);
 
       for (String watchedKey : watchedKeys) {
         watchedKeys2CacheKey.put(watchedKey, cacheKey);

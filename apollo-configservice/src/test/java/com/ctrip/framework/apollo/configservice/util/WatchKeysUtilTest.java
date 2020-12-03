@@ -42,6 +42,7 @@ public class WatchKeysUtilTest {
   private String defaultCluster;
   private String someDC;
   private String somePublicAppId;
+  private String appTag = "swim1";
 
   @Before
   public void setUp() throws Exception {
@@ -79,7 +80,7 @@ public class WatchKeysUtilTest {
   @Test
   public void testAssembleAllWatchKeysWithOneNamespaceAndDefaultCluster() throws Exception {
     Set<String> watchKeys =
-        watchKeysUtil.assembleAllWatchKeys(someAppId, defaultCluster, someNamespace, null);
+        watchKeysUtil.assembleAllWatchKeys(someAppId, defaultCluster, someNamespace, null, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster);
 
@@ -90,7 +91,7 @@ public class WatchKeysUtilTest {
   @Test
   public void testAssembleAllWatchKeysWithOneNamespaceAndSomeDC() throws Exception {
     Set<String> watchKeys =
-        watchKeysUtil.assembleAllWatchKeys(someAppId, someDC, someNamespace, someDC);
+        watchKeysUtil.assembleAllWatchKeys(someAppId, someDC, someNamespace, someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someDC);
 
@@ -101,7 +102,7 @@ public class WatchKeysUtilTest {
   @Test
   public void testAssembleAllWatchKeysWithOneNamespaceAndSomeDCAndSomeCluster() throws Exception {
     Set<String> watchKeys =
-        watchKeysUtil.assembleAllWatchKeys(someAppId, someCluster, someNamespace, someDC);
+        watchKeysUtil.assembleAllWatchKeys(someAppId, someCluster, someNamespace, someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someCluster, someDC);
 
@@ -113,7 +114,7 @@ public class WatchKeysUtilTest {
   public void testAssembleAllWatchKeysWithMultipleNamespaces() throws Exception {
     Multimap<String, String> watchKeysMap =
         watchKeysUtil.assembleAllWatchKeys(someAppId, someCluster,
-            Sets.newHashSet(someNamespace, anotherNamespace), someDC);
+            Sets.newHashSet(someNamespace, anotherNamespace), someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someCluster, someDC);
 
@@ -126,7 +127,7 @@ public class WatchKeysUtilTest {
   public void testAssembleAllWatchKeysWithPrivateAndPublicNamespaces() throws Exception {
     Multimap<String, String> watchKeysMap =
         watchKeysUtil.assembleAllWatchKeys(someAppId, someCluster,
-            Sets.newHashSet(someNamespace, anotherNamespace, somePublicNamespace), someDC);
+            Sets.newHashSet(someNamespace, anotherNamespace, somePublicNamespace), someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someCluster, someDC);
 
@@ -142,7 +143,7 @@ public class WatchKeysUtilTest {
   public void testAssembleWatchKeysForNoAppIdPlaceHolder() throws Exception {
     Multimap<String, String> watchKeysMap =
         watchKeysUtil.assembleAllWatchKeys(ConfigConsts.NO_APPID_PLACEHOLDER, someCluster,
-            Sets.newHashSet(someNamespace, anotherNamespace), someDC);
+            Sets.newHashSet(someNamespace, anotherNamespace), someDC, appTag);
 
     assertTrue(watchKeysMap.isEmpty());
   }
@@ -151,7 +152,7 @@ public class WatchKeysUtilTest {
   public void testAssembleWatchKeysForNoAppIdPlaceHolderAndPublicNamespace() throws Exception {
     Multimap<String, String> watchKeysMap =
         watchKeysUtil.assembleAllWatchKeys(ConfigConsts.NO_APPID_PLACEHOLDER, someCluster,
-            Sets.newHashSet(someNamespace, somePublicNamespace), someDC);
+            Sets.newHashSet(someNamespace, somePublicNamespace), someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someCluster, someDC);
 

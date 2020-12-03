@@ -3,6 +3,7 @@ package com.ctrip.framework.apollo.configservice.controller;
 import com.ctrip.framework.apollo.biz.entity.ReleaseMessage;
 import com.ctrip.framework.apollo.biz.grayReleaseRule.GrayReleaseRulesHolder;
 import com.ctrip.framework.apollo.biz.message.Topics;
+import com.ctrip.framework.apollo.biz.tagReleaseRule.TagReleaseRulesHolder;
 import com.ctrip.framework.apollo.configservice.util.NamespaceUtil;
 import com.ctrip.framework.apollo.configservice.util.WatchKeysUtil;
 import com.ctrip.framework.apollo.core.dto.ApolloConfig;
@@ -46,6 +47,8 @@ public class ConfigFileControllerTest {
   private NamespaceUtil namespaceUtil;
   @Mock
   private GrayReleaseRulesHolder grayReleaseRulesHolder;
+  @Mock
+  private TagReleaseRulesHolder tagReleaseRuleHolder;
   private ConfigFileController configFileController;
   private String someAppId;
   private String someAppTag;
@@ -63,7 +66,7 @@ public class ConfigFileControllerTest {
   @Before
   public void setUp() throws Exception {
     configFileController = new ConfigFileController(
-        configController, namespaceUtil, watchKeysUtil, grayReleaseRulesHolder
+        configController, namespaceUtil, watchKeysUtil, grayReleaseRulesHolder, tagReleaseRuleHolder
     );
 
     someAppId = "someAppId";
@@ -95,6 +98,7 @@ public class ConfigFileControllerTest {
 
     String someWatchKey = "someWatchKey";
     String anotherWatchKey = "anotherWatchKey";
+    String appTag = "swim1";
     Set<String> watchKeys = Sets.newHashSet(someWatchKey, anotherWatchKey);
 
     String cacheKey =
@@ -109,7 +113,7 @@ public class ConfigFileControllerTest {
         .queryConfig(someAppId, someClusterName, someNamespace, someDataCenter, "-1", someClientIp, someAppTag, null,
             someRequest, someResponse)).thenReturn(someApolloConfig);
     when(watchKeysUtil
-        .assembleAllWatchKeys(someAppId, someClusterName, someNamespace, someDataCenter))
+        .assembleAllWatchKeys(someAppId, someClusterName, someNamespace, someDataCenter, appTag))
         .thenReturn(watchKeys);
 
     ResponseEntity<String> response =
@@ -144,6 +148,7 @@ public class ConfigFileControllerTest {
   public void testQueryConfigAsJson() throws Exception {
     String someKey = "someKey";
     String someValue = "someValue";
+    String appTag = "swim1";
     Gson gson = new Gson();
     Type responseType = new TypeToken<Map<String, String>>(){}.getType();
 
@@ -158,7 +163,7 @@ public class ConfigFileControllerTest {
             someRequest, someResponse)).thenReturn(someApolloConfig);
     when(someApolloConfig.getConfigurations()).thenReturn(configurations);
     when(watchKeysUtil
-        .assembleAllWatchKeys(someAppId, someClusterName, someNamespace, someDataCenter))
+        .assembleAllWatchKeys(someAppId, someClusterName, someNamespace, someDataCenter, appTag))
         .thenReturn(watchKeys);
 
     ResponseEntity<String> response =

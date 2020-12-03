@@ -96,6 +96,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
       @RequestParam(value = "cluster") String cluster,
       @RequestParam(value = "notifications") String notificationsAsString,
       @RequestParam(value = "dataCenter", required = false) String dataCenter,
+      @RequestParam(value = "appTag", required = false) String appTag,
       @RequestParam(value = "ip", required = false) String clientIp) {
     List<ApolloConfigNotification> notifications = null;
 
@@ -131,7 +132,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
     }
 
     Multimap<String, String> watchedKeysMap =
-        watchKeysUtil.assembleAllWatchKeys(appId, cluster, namespaces, dataCenter);
+        watchKeysUtil.assembleAllWatchKeys(appId, cluster, namespaces, dataCenter, appTag);
 
     Set<String> watchedKeys = Sets.newHashSet(watchedKeysMap.values());
 
@@ -157,8 +158,8 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
     }
 
     logWatchedKeys(watchedKeys, "Apollo.LongPoll.RegisteredKeys");
-    logger.debug("Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}",
-        watchedKeys, appId, cluster, namespaces, dataCenter);
+    logger.debug("Listening {} from appId: {}, appTag: {}, cluster: {}, namespace: {}, datacenter: {}",
+        watchedKeys, appId, appTag, cluster, namespaces, dataCenter);
 
     /**
      * 2、check new release

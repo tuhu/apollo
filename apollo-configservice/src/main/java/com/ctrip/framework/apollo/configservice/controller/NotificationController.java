@@ -79,11 +79,12 @@ public class NotificationController implements ReleaseMessageListener {
       @RequestParam(value = "namespace", defaultValue = ConfigConsts.NAMESPACE_APPLICATION) String namespace,
       @RequestParam(value = "dataCenter", required = false) String dataCenter,
       @RequestParam(value = "notificationId", defaultValue = "-1") long notificationId,
+      @RequestParam(value = "appTag", required = false) String appTag,
       @RequestParam(value = "ip", required = false) String clientIp) {
     //strip out .properties suffix
     namespace = namespaceUtil.filterNamespaceName(namespace);
 
-    Set<String> watchedKeys = watchKeysUtil.assembleAllWatchKeys(appId, cluster, namespace, dataCenter);
+    Set<String> watchedKeys = watchKeysUtil.assembleAllWatchKeys(appId, cluster, namespace, dataCenter, appTag);
 
     DeferredResult<ResponseEntity<ApolloConfigNotification>> deferredResult =
         new DeferredResult<>(TIMEOUT, NOT_MODIFIED_RESPONSE);
