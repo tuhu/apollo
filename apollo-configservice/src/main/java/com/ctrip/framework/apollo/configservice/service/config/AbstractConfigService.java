@@ -64,10 +64,6 @@ public abstract class AbstractConfigService implements ConfigService {
       String configNamespace, ApolloNotificationMessages clientMessages) {
 	
 	Release release = null;  
-	
-	if(appTag != null && !appTag.isEmpty()) {
-		appTag = BizConstants.SWIMLANE_TAG_PREFIX + appTag;
-	}
 	  
 	if(!Strings.isNullOrEmpty(appTag)) {
 		Long tagReleaseId = tagReleaseRulesHolder.findReleaseIdFromTagReleaseRule(clientAppId, appTag, configAppId, configClusterName, configNamespace);

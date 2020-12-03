@@ -136,6 +136,13 @@ public class DefaultApplicationProvider implements ApplicationProvider {
     	  m_appTag = "swimlane_" + m_appTag.trim();
     	  logger.info("app Tag is set to {} by swimlane property from OS environment variable", m_appTag);
     	  return;
+      }else {
+    	  m_appTag = System.getProperty("swimlane");
+    	  if (!Utils.isBlank(m_appTag)) {
+        	  m_appTag = "swimlane_" + m_appTag.trim();
+        	  logger.info("app Tag is set to {} by swimlane property from OS environment variable", m_appTag);
+        	  return;
+          }
       }
       
       m_appTag = System.getenv("apollo.tag");
@@ -143,6 +150,13 @@ public class DefaultApplicationProvider implements ApplicationProvider {
     	  m_appTag = m_appTag.trim();
     	  logger.info("app Tag is set to {} by apollo tag property from OS environment variable", m_appTag);
     	  return;
+      }else {
+    	  m_appTag = System.getProperty("apollo.tag");
+    	  if (!Utils.isBlank(m_appTag)) {
+        	  m_appTag = m_appTag.trim();
+        	  logger.info("app Tag is set to {} by apollo tag property from OS environment variable", m_appTag);
+        	  return;
+          }
       }
       
       m_appTag = "";
