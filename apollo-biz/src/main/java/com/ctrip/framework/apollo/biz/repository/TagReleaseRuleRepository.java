@@ -18,6 +18,9 @@ public interface TagReleaseRuleRepository extends PagingAndSortingRepository<Tag
   List<TagReleaseRule> findByAppIdAndClusterNameAndNamespaceName(String appId,
                                                                String clusterName, String namespaceName);
   
+  List<TagReleaseRule> findByAppIdAndParentClusterNameAndNamespaceName(String appId,
+          String parentClusterName, String namespaceName);
+  
   TagReleaseRule findByAppIdAndClusterNameAndNamespaceNameAndTag(String appId,
           String clusterName, String namespaceName, String tag);
 

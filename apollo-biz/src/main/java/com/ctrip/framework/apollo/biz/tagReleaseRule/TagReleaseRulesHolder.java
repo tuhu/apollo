@@ -93,7 +93,7 @@ public class TagReleaseRulesHolder implements ReleaseMessageListener, Initializi
     String namespace = keys.get(2);
 
     List<TagReleaseRule> rules = tagReleaseRuleRepository
-        .findByAppIdAndClusterNameAndNamespaceName(appId, cluster, namespace);
+        .findByAppIdAndParentClusterNameAndNamespaceName(appId, cluster, namespace);
 
     mergeTagReleaseRules(rules);
   }

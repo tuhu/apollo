@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ctrip.framework.apollo.biz.common.BizConstants;
 import com.ctrip.framework.apollo.biz.entity.Audit;
 import com.ctrip.framework.apollo.biz.entity.Cluster;
+import com.ctrip.framework.apollo.biz.entity.GrayReleaseRule;
 import com.ctrip.framework.apollo.biz.entity.Namespace;
 import com.ctrip.framework.apollo.biz.entity.Release;
 import com.ctrip.framework.apollo.biz.entity.TagNamespace;
@@ -133,12 +134,21 @@ public class NamespaceTagService {
       return null;
     }
     
-    oldRules.setBranchStatus(NamespaceBranchStatus.ACTIVE);
-    oldRules.setReleaseId(latestReleaseId);
-    oldRules.setDataChangeCreatedBy(operator);
-    oldRules.setDataChangeLastModifiedBy(operator);
+    TagReleaseRule newRules = new TagReleaseRule();
+    newRules.setBranchStatus(NamespaceBranchStatus.ACTIVE);
+    newRules.setReleaseId(latestReleaseId);
+    newRules.setAppId(oldRules.getAppId());
+    newRules.setParentClusterName(oldRules.getParentClusterName());
+    newRules.setClusterName(oldRules.getClusterName());
+    newRules.setTag(oldRules.getTag());
+    newRules.setNamespaceName(oldRules.getNamespaceName());
+    newRules.setBranchName(oldRules.getBranchName());
+    newRules.setDataChangeCreatedBy(operator);
+    newRules.setDataChangeLastModifiedBy(operator);
 
-    tagReleaseRuleRepository.save(oldRules);
+    tagReleaseRuleRepository.save(newRules);
+
+    tagReleaseRuleRepository.delete(oldRules);
 
     return oldRules;
   }

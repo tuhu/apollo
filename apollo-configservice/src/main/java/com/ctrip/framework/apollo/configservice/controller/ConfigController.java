@@ -117,7 +117,7 @@ public class ConfigController {
       return null;
     }
 
-    auditReleases(appId, clusterName, dataCenter, clientIp, releases);
+    auditReleases(appId, clusterName, dataCenter, clientIp, releases, appTag);
 
     String mergedReleaseKey = releases.stream().map(Release::getReleaseKey)
             .collect(Collectors.joining(ConfigConsts.CLUSTER_NAMESPACE_SEPARATOR));
@@ -196,13 +196,17 @@ public class ConfigController {
   }
 
   private void auditReleases(String appId, String cluster, String dataCenter, String clientIp,
-                             List<Release> releases) {
+                             List<Release> releases, String appTag) {
     if (Strings.isNullOrEmpty(clientIp)) {
       //no need to audit instance config when there is no ip
       return;
     }
     for (Release release : releases) {
-      instanceConfigAuditUtil.audit(appId, cluster, dataCenter, clientIp, release.getAppId(),
+      String clusterName = cluster;
+      if(!Strings.isNullOrEmpty(appTag)) {
+    	  clusterName = release.getClusterName();
+      }
+      instanceConfigAuditUtil.audit(appId, clusterName, dataCenter, clientIp, release.getAppId(),
           release.getClusterName(),
           release.getNamespaceName(), release.getReleaseKey());
     }
