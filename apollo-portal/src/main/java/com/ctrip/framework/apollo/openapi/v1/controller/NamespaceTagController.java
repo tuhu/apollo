@@ -46,7 +46,7 @@ public class NamespaceTagController {
         this.userService = userService;
     }
 
-    @GetMapping(value = "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/branches")
+    @GetMapping(value = "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tags/{tag}/branches")
     public OpenNamespaceDTO findTagBranch(@PathVariable String appId,
                                        @PathVariable String env,
                                        @PathVariable String clusterName,
@@ -82,7 +82,7 @@ public class NamespaceTagController {
     }
 
     @PreAuthorize(value = "@consumerPermissionValidator.hasModifyNamespacePermission(#request, #appId, #namespaceName, #env)")
-    @DeleteMapping(value = "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/branches/{branchName}")
+    @DeleteMapping(value = "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branches/{branchName}")
     public void deleteTagBranch(@PathVariable String appId,
                              @PathVariable String env,
                              @PathVariable String clusterName,
