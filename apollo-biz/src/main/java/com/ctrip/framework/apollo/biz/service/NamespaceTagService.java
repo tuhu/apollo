@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ctrip.framework.apollo.biz.common.BizConstants;
 import com.ctrip.framework.apollo.biz.entity.Audit;
 import com.ctrip.framework.apollo.biz.entity.Cluster;
-import com.ctrip.framework.apollo.biz.entity.GrayReleaseRule;
 import com.ctrip.framework.apollo.biz.entity.Namespace;
 import com.ctrip.framework.apollo.biz.entity.Release;
 import com.ctrip.framework.apollo.biz.entity.TagNamespace;
@@ -114,8 +113,16 @@ public class NamespaceTagService {
 	return result;
   }
   
-  public Namespace findTagBranch(String appId, String parentClusterName, String namespaceName, String tag) {
-    return namespaceService.findChildNamespace(appId, parentClusterName, namespaceName);
+  public TagNamespace findTagBranch(String appId, String parentClusterName, String namespaceName, String tag) {
+	  List<TagNamespace> nps = findTagBranchs(appId, parentClusterName, namespaceName);
+	  if(nps != null && !nps.isEmpty()) {
+		  for(TagNamespace tnp : nps) {
+			  if(tnp.getTag().equals(tag)) {
+				  return tnp;
+			  }
+		  }
+	  }
+	  return null;
   }
 
   public TagReleaseRule findBranchTagRules(String appId, String clusterName, String namespaceName,

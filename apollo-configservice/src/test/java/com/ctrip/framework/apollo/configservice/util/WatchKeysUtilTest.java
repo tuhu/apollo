@@ -1,5 +1,19 @@
 package com.ctrip.framework.apollo.configservice.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.util.Collection;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import com.ctrip.framework.apollo.biz.service.NamespaceTagService;
 import com.ctrip.framework.apollo.common.entity.AppNamespace;
 import com.ctrip.framework.apollo.configservice.service.AppNamespaceServiceWithCache;
 import com.ctrip.framework.apollo.core.ConfigConsts;
@@ -7,18 +21,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Collection;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Jason Song(song_s@ctrip.com)
@@ -27,6 +29,8 @@ import static org.mockito.Mockito.when;
 public class WatchKeysUtilTest {
   @Mock
   private AppNamespaceServiceWithCache appNamespaceService;
+  @Mock
+  private NamespaceTagService namespaceTagService;
   @Mock
   private AppNamespace someAppNamespace;
   @Mock
@@ -46,7 +50,7 @@ public class WatchKeysUtilTest {
 
   @Before
   public void setUp() throws Exception {
-    watchKeysUtil = new WatchKeysUtil(appNamespaceService);
+    watchKeysUtil = new WatchKeysUtil(appNamespaceService, namespaceTagService);
 
     someAppId = "someId";
     someCluster = "someCluster";
