@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.ctrip.framework.apollo.biz.entity.TagNamespace;
-import com.ctrip.framework.apollo.biz.service.NamespaceTagService;
 import com.ctrip.framework.apollo.common.entity.AppNamespace;
 import com.ctrip.framework.apollo.configservice.service.AppNamespaceServiceWithCache;
 import com.ctrip.framework.apollo.core.ConfigConsts;
@@ -26,12 +24,9 @@ import com.google.common.collect.Sets;
 public class WatchKeysUtil {
   private static final Joiner STRING_JOINER = Joiner.on(ConfigConsts.CLUSTER_NAMESPACE_SEPARATOR);
   private final AppNamespaceServiceWithCache appNamespaceService;
-  private final NamespaceTagService namespaceTagService;
 
-  public WatchKeysUtil(final AppNamespaceServiceWithCache appNamespaceService,
-		  final NamespaceTagService namespaceTagService) {
+  public WatchKeysUtil(final AppNamespaceServiceWithCache appNamespaceService) {
     this.appNamespaceService = appNamespaceService;
-    this.namespaceTagService = namespaceTagService;
   }
 
   /**
@@ -116,13 +111,6 @@ public class WatchKeysUtil {
 
     //watch default cluster config change
     watchedKeys.add(assembleKey(appId, ConfigConsts.CLUSTER_NAME_DEFAULT, namespace));
-    
-    if(!Strings.isNullOrEmpty(appTag)) {
-    	TagNamespace np = namespaceTagService.findTagBranch(appId, clusterName, namespace, appTag);
-    	if(np != null) {
-    		watchedKeys.add(assembleKey(appId, np.getClusterName(), namespace));
-    	}
-    }
 
     return watchedKeys;
   }

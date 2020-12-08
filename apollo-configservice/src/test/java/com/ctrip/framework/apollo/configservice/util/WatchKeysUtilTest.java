@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.ctrip.framework.apollo.biz.service.NamespaceTagService;
 import com.ctrip.framework.apollo.common.entity.AppNamespace;
 import com.ctrip.framework.apollo.configservice.service.AppNamespaceServiceWithCache;
 import com.ctrip.framework.apollo.core.ConfigConsts;
@@ -29,8 +28,6 @@ import com.google.common.collect.Sets;
 public class WatchKeysUtilTest {
   @Mock
   private AppNamespaceServiceWithCache appNamespaceService;
-  @Mock
-  private NamespaceTagService namespaceTagService;
   @Mock
   private AppNamespace someAppNamespace;
   @Mock
@@ -50,7 +47,7 @@ public class WatchKeysUtilTest {
 
   @Before
   public void setUp() throws Exception {
-    watchKeysUtil = new WatchKeysUtil(appNamespaceService, namespaceTagService);
+    watchKeysUtil = new WatchKeysUtil(appNamespaceService);
 
     someAppId = "someId";
     someCluster = "someCluster";
