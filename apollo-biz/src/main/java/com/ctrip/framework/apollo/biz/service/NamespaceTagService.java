@@ -63,6 +63,10 @@ public class NamespaceTagService {
     Namespace childNamespace = createNamespaceTagBranch(appId, createdChildCluster.getName(),
                                                         namespaceName, operator);
     
+    if(!tag.startsWith(BizConstants.SWIMLANE_TAG_PREFIX)) {
+    	tag = BizConstants.SWIMLANE_TAG_PREFIX + tag;
+    }
+    
     TagReleaseRule oldRule = tagReleaseRuleRepository.findByAppIdAndClusterNameAndNamespaceNameAndTag(appId, parentClusterName, namespaceName, tag);
     if(oldRule != null) {
     	throw new ServiceException("the tag has existed.");
@@ -70,10 +74,7 @@ public class NamespaceTagService {
     
     TagReleaseRule rule = new TagReleaseRule();
     rule.setBranchStatus(NamespaceBranchStatus.ACTIVE);
-    rule.setReleaseId(0l);
-    if(!tag.startsWith(BizConstants.SWIMLANE_TAG_PREFIX)) {
-    	tag = BizConstants.SWIMLANE_TAG_PREFIX + tag;
-    }
+    rule.setReleaseId(0l);    
     rule.setTag(tag);
     rule.setAppId(appId);
     rule.setParentClusterName(parentClusterName);
