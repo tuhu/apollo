@@ -788,5 +788,6 @@
   "Rollback.RollbackSuccessfully": "Rollback Successfully",
   "Rollback.RollbackFailed": "Failed to Rollback",
   "Revoke.RevokeFailed": "Failed to Revoke",
-  "Revoke.RevokeSuccessfully": "Revoke Successfully"
+  "Revoke.RevokeSuccessfully": "Revoke Successfully",
+  "Config.Swimlane.name.notallow.chinese": "Swimlane name not allow chinese"
 }

@@ -222,7 +222,7 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
 
         $scope.item = _.clone(toEditItem);
 
-        if (namespace.isBranch || namespace.isLinkedNamespace) {
+        if (namespace.isTag || namespace.isBranch || namespace.isLinkedNamespace) {
             var existedItem = false;
             namespace.items.forEach(function (item) {
                 if (!item.isDeleted && item.item.key == toEditItem.key) {
@@ -309,6 +309,12 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
 	}
 	
 	function createTag() {
+		var reg = new RegExp("[\\u4E00-\\u9FFF]+","g");
+		if(reg.test($scope.swimlane.name)){ 
+			toastr.error($translate.instant('Config.Swimlane.name.notallow.chinese'));
+    		return false ;
+		}
+
 		NamespaceTagService.createTag($rootScope.pageContext.appId,
             $rootScope.pageContext.env,
             $rootScope.pageContext.clusterName,

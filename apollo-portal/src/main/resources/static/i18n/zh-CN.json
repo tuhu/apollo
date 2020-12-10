@@ -788,5 +788,6 @@
   "Rollback.RollbackSuccessfully": "回滚成功",
   "Rollback.RollbackFailed": "回滚失败",
   "Revoke.RevokeFailed": "撤销失败",
-  "Revoke.RevokeSuccessfully": "撤销成功"
+  "Revoke.RevokeSuccessfully": "撤销成功",
+  "Config.Swimlane.name.notallow.chinese": "泳道名称不能包含中文"
 }

@@ -74,6 +74,7 @@ function itemModalDirective($translate, toastr, $sce, AppUtil, EventManager, Con
                                     scope.item.addItemBtnDisabled = false;
                                 });
                     }else if (scope.toOperationNamespace.isTag) {
+
                         ConfigService.create_item(scope.appId,
                             scope.env,
                             scope.toOperationNamespace.baseInfo.clusterName,
