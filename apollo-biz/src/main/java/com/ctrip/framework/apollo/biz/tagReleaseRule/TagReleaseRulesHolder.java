@@ -1,6 +1,9 @@
 package com.ctrip.framework.apollo.biz.tagReleaseRule;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -165,6 +168,39 @@ public class TagReleaseRulesHolder implements ReleaseMessageListener, Initializi
     if (CollectionUtils.isEmpty(TagReleaseRules)) {
       return;
     }
+    Map<String, List<String>> activesTags = new HashMap<String, List<String>>();
+    for(TagReleaseRule TagReleaseRule : TagReleaseRules) {
+    	String key = assembleTagReleaseRuleKey(TagReleaseRule.getAppId(), TagReleaseRule
+    	          .getParentClusterName(), TagReleaseRule.getNamespaceName());
+    	List<String> tags = activesTags.get(key);
+    	if(tags == null) {
+    		tags = new ArrayList<String>();
+    		activesTags.put(key, tags);
+    	}
+    	tags.add(TagReleaseRule.getBranchName());
+    }
+    for(Map.Entry<String, List<String>> etr : activesTags.entrySet()) {
+    	String key = etr.getKey();
+    	List<String> bhs = etr.getValue();
+    	if(bhs != null && !bhs.isEmpty()) {
+    		List<TagReleaseRuleCache> rules = Lists.newArrayList(TagReleaseRuleCache.get(key));
+        	if(rules != null && !rules.isEmpty()) {
+        		for(TagReleaseRuleCache ruleCache : rules) {
+        			String bhName = ruleCache.getBranchName();
+        			if(!bhs.contains(bhName)) {
+        				removeCache(key, ruleCache);
+        			}
+        		}
+        	}
+    	}else {
+    		List<TagReleaseRuleCache> rules = Lists.newArrayList(TagReleaseRuleCache.get(key));
+    		if(rules != null && !rules.isEmpty()) {
+        		for(TagReleaseRuleCache ruleCache : rules) {
+        			removeCache(key, ruleCache);
+        		}
+        	}
+    	}
+    }
     for (TagReleaseRule TagReleaseRule : TagReleaseRules) {
       if (TagReleaseRule.getReleaseId() == null || TagReleaseRule.getReleaseId() == 0) {
         //filter rules with no release id, i.e. never released
@@ -175,12 +211,14 @@ public class TagReleaseRulesHolder implements ReleaseMessageListener, Initializi
       //create a new list to avoid ConcurrentModificationException
       List<TagReleaseRuleCache> rules = Lists.newArrayList(TagReleaseRuleCache.get(key));
       TagReleaseRuleCache oldRule = null;
-      for (TagReleaseRuleCache ruleCache : rules) {
-        if (ruleCache.getBranchName().equals(TagReleaseRule.getBranchName())) {
-          oldRule = ruleCache;
-          break;
-        }
-      }
+      if(rules != null) {
+    	  for (TagReleaseRuleCache ruleCache : rules) {
+	        if (ruleCache.getBranchName().equals(TagReleaseRule.getBranchName())) {
+	          oldRule = ruleCache;
+	          break;
+	        }
+	      }
+      }      
 
       //if old rule is null and new rule's branch status is not active, ignore
       if (oldRule == null && TagReleaseRule.getBranchStatus() != NamespaceBranchStatus.ACTIVE) {
