@@ -10,9 +10,9 @@ logging:
     org.springframework.cloud: 'DEBUG'
   file: /opt/logs/100003173/apollo-portal.log
   
-apollo:
-  portal:
-    envs: local
+#apollo:
+#  portal:
+#    envs: local
 
 management:
   health:
