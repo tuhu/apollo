@@ -1,18 +1,18 @@
 @echo off
 
 rem apollo config db info
-set apollo_config_db_url="jdbc:mysql://172.16.20.168:3306/apolloconfigdb?characterEncoding=utf8"
-set apollo_config_db_username="apollouser"
-set apollo_config_db_password="Itsme@999"
+set apollo_config_db_url="jdbc:mysql://fill-in-the-correct-server:3306/apolloconfigdb?characterEncoding=utf8"
+set apollo_config_db_username="FillInCorrectUser"
+set apollo_config_db_password="FillInCorrectPassword"
 
 rem apollo portal db info
-set apollo_portal_db_url="jdbc:mysql://172.16.20.168:3306/apolloportaldb?characterEncoding=utf8"
-set apollo_portal_db_username="apollouser"
-set apollo_portal_db_password="Itsme@999"
+set apollo_portal_db_url="jdbc:mysql://fill-in-the-correct-server:3306/apolloportaldb?characterEncoding=utf8"
+set apollo_portal_db_username="FillInCorrectUser"
+set apollo_portal_db_password="FillInCorrectPassword"
 
 rem meta server url, different environments should have different meta server addresses
-set dev_meta="http://apollo.tuhu.work:8090"
-set fat_meta="http://apollo.tuhu.work:8091"
+set dev_meta="http://fill-in-dev-meta-server:8090"
+set fat_meta="http://fill-in-fat-meta-server:8091"
 set uat_meta="http://fill-in-uat-meta-server:8080"
 set pro_meta="http://fill-in-pro-meta-server:8080"
 
