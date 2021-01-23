@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.springframework.util.CollectionUtils;
+
 import com.ctrip.framework.apollo.common.dto.ClusterDTO;
 import com.ctrip.framework.apollo.common.dto.GrayReleaseRuleDTO;
 import com.ctrip.framework.apollo.common.dto.GrayReleaseRuleItemDTO;
@@ -28,6 +30,7 @@ import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceLockDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenReleaseDTO;
 import com.ctrip.framework.apollo.portal.entity.bo.ItemBO;
 import com.ctrip.framework.apollo.portal.entity.bo.NamespaceBO;
+import com.ctrip.framework.apollo.portal.entity.bo.TagNamespaceBO;
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -90,6 +93,29 @@ public class OpenApiBeanUtils {
     return openNamespaceDTO;
 
   }
+  
+  public static OpenNamespaceDTO transformFromTagNamespaceBO(TagNamespaceBO namespaceBO) {
+	    Preconditions.checkArgument(namespaceBO != null);
+
+	    OpenNamespaceDTO openNamespaceDTO =
+	        BeanUtils.transform(OpenNamespaceDTO.class, namespaceBO.getBaseInfo());
+
+	    // app namespace info
+	    openNamespaceDTO.setFormat(namespaceBO.getFormat());
+	    openNamespaceDTO.setComment(namespaceBO.getComment());
+	    openNamespaceDTO.setPublic(namespaceBO.isPublic());
+
+	    // items
+	    List<OpenItemDTO> items = new LinkedList<>();
+	    List<ItemBO> itemBOs = namespaceBO.getItems();
+	    if (!CollectionUtils.isEmpty(itemBOs)) {
+	      items.addAll(itemBOs.stream().map(itemBO -> transformFromItemDTO(itemBO.getItem()))
+	          .collect(Collectors.toList()));
+	    }
+	    openNamespaceDTO.setItems(items);
+	    return openNamespaceDTO;
+
+	  }
 
   public static List<OpenNamespaceDTO> batchTransformFromNamespaceBOs(
       List<NamespaceBO> namespaceBOs) {

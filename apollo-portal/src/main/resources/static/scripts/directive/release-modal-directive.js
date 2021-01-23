@@ -33,6 +33,8 @@ function releaseModalDirective($translate, toastr, AppUtil, EventManager, Releas
                         namespace.releaseTitle = date + "-gray-release-merge-to-master";
                     } else if (namespace.isBranch) {
                         namespace.releaseTitle = date + "-gray";
+                    } else if (namespace.isTag) {
+                        namespace.releaseTitle = date + "-tag";
                     } else {
                         namespace.releaseTitle = date + "-release";
                     }
@@ -45,6 +47,8 @@ function releaseModalDirective($translate, toastr, AppUtil, EventManager, Releas
                     mergeAndPublish();
                 } else if (scope.toReleaseNamespace.isBranch) {
                     grayPublish();
+                } else if (scope.toReleaseNamespace.isTag) {
+                    tagGrayPublish();
                 } else {
                     publish();
                 }
@@ -118,6 +122,40 @@ function releaseModalDirective($translate, toastr, AppUtil, EventManager, Releas
                         }, function (result) {
                             scope.releaseBtnDisabled = false;
                             toastr.error(AppUtil.errorMsg(result), $translate.instant('ReleaseModal.GrayscalePublishFailed'));
+
+                        });
+            }
+
+			function tagGrayPublish() {
+                scope.releaseBtnDisabled = true;
+                ReleaseService.grayPublish(scope.appId, scope.env,
+                    scope.toReleaseNamespace.parentNamespace.baseInfo.clusterName,
+                    scope.toReleaseNamespace.baseInfo.namespaceName,
+                    scope.toReleaseNamespace.baseInfo.clusterName,
+                    scope.toReleaseNamespace.releaseTitle,
+                    scope.releaseComment,
+                    scope.isEmergencyPublish).then(
+                        function (result) {
+                            AppUtil.hideModal('#releaseModal');
+                            toastr.success($translate.instant('ReleaseModal.SwimlanePublished'));
+
+                            scope.releaseBtnDisabled = false;
+
+                            //refresh item status
+                            scope.toReleaseNamespace.branchItems.forEach(function (item, index) {
+                                if (item.isDeleted) {
+                                    scope.toReleaseNamespace.branchItems.splice(index, 1);
+                                } else {
+                                    item.isModified = false;
+                                }
+                            });
+                            //reset namespace status
+                            scope.toReleaseNamespace.itemModifiedCnt = 0;
+                            scope.toReleaseNamespace.lockOwner = undefined;
+
+                        }, function (result) {
+                            scope.releaseBtnDisabled = false;
+                            toastr.error(AppUtil.errorMsg(result), $translate.instant('ReleaseModal.SwimlanePublishFailed'));
 
                         });
             }

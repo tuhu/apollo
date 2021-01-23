@@ -73,6 +73,26 @@ function itemModalDirective($translate, toastr, $sce, AppUtil, EventManager, Con
                                     toastr.error(AppUtil.errorMsg(result), $translate.instant('ItemModal.AddFailed'));
                                     scope.item.addItemBtnDisabled = false;
                                 });
+                    }else if (scope.toOperationNamespace.isTag) {
+
+                        ConfigService.create_item(scope.appId,
+                            scope.env,
+                            scope.toOperationNamespace.baseInfo.clusterName,
+                            scope.toOperationNamespace.baseInfo.namespaceName,
+                            scope.item).then(
+                                function (result) {
+                                    toastr.success($translate.instant('ItemModal.AddedTips'));
+                                    scope.item.addItemBtnDisabled = false;
+                                    AppUtil.hideModal('#itemModal');
+                                    EventManager.emit(EventManager.EventType.REFRESH_NAMESPACE,
+                                        {
+                                            namespace: scope.toOperationNamespace
+                                        });
+
+                                }, function (result) {
+                                    toastr.error(AppUtil.errorMsg(result), $translate.instant('ItemModal.AddFailed'));
+                                    scope.item.addItemBtnDisabled = false;
+                                });
                     } else {
                         if (selectedClusters.length == 0) {
                             toastr.error($translate.instant('ItemModal.PleaseChooseCluster'));

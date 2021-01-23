@@ -1,10 +1,10 @@
 application_module.controller("ConfigNamespaceController",
     ['$rootScope', '$scope', '$translate', 'toastr', 'AppUtil', 'EventManager', 'ConfigService',
-        'PermissionService', 'UserService', 'NamespaceBranchService', 'NamespaceService',
+        'PermissionService', 'UserService', 'NamespaceBranchService', 'NamespaceService','NamespaceTagService',
         controller]);
 
 function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManager, ConfigService,
-    PermissionService, UserService, NamespaceBranchService, NamespaceService) {
+    PermissionService, UserService, NamespaceBranchService, NamespaceService, NamespaceTagService) {
 
     $scope.rollback = rollback;
     $scope.preDeleteItem = preDeleteItem;
@@ -19,6 +19,10 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
     $scope.preCreateBranch = preCreateBranch;
     $scope.preDeleteBranch = preDeleteBranch;
     $scope.deleteBranch = deleteBranch;
+	$scope.createTag = createTag;
+	$scope.preCreateTag = preCreateTag;
+	$scope.preDeleteTag = preDeleteTag;
+	$scope.deleteTag = deleteTag;
     $scope.showNoModifyPermissionDialog = showNoModifyPermissionDialog;
     $scope.lockCheck = lockCheck;
     $scope.emergencyPublish = emergencyPublish;
@@ -116,6 +120,7 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
     }
 
     function refreshSingleNamespace(namespace) {
+	
         if ($rootScope.pageContext.env == '') {
             return;
         }
@@ -127,7 +132,7 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
                 function (result) {
 
                     $scope.namespaces.forEach(function (namespace, index) {
-                        if (namespace.baseInfo.namespaceName == result.baseInfo.namespaceName) {
+						if (namespace.baseInfo.namespaceName == result.baseInfo.namespaceName) {
                             result.showNamespaceBody = true;
                             result.initialized = true;
                             result.show = namespace.show;
@@ -217,7 +222,7 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
 
         $scope.item = _.clone(toEditItem);
 
-        if (namespace.isBranch || namespace.isLinkedNamespace) {
+        if (namespace.isTag || namespace.isBranch || namespace.isLinkedNamespace) {
             var existedItem = false;
             namespace.items.forEach(function (item) {
                 if (!item.isDeleted && item.item.key == toEditItem.key) {
@@ -294,6 +299,62 @@ function controller($rootScope, $scope, $translate, toastr, AppUtil, EventManage
 
     function showNoModifyPermissionDialog() {
         $("#modifyNoPermissionDialog").modal('show');
+    }
+
+	var toCreateTagNamespace = {};
+	
+	function preCreateTag(namespace) {
+		toCreateTagNamespace = namespace;
+		AppUtil.showModal("#createTagTips");		
+	}
+	
+	function createTag() {
+		var reg = new RegExp("[\\u4E00-\\u9FFF]+","g");
+		if(reg.test($scope.swimlane.name)){ 
+			toastr.error($translate.instant('Config.Swimlane.name.notallow.chinese'));
+    		return false ;
+		}
+
+		NamespaceTagService.createTag($rootScope.pageContext.appId,
+            $rootScope.pageContext.env,
+            $rootScope.pageContext.clusterName,
+            toCreateTagNamespace.baseInfo.namespaceName,
+			$scope.swimlane.name)
+            .then(function (result) {
+                toastr.success($translate.instant('Config.SwimlaneCreated'));
+                EventManager.emit(EventManager.EventType.REFRESH_NAMESPACE,
+                    {
+                        namespace: toCreateTagNamespace
+                    });
+            }, function (result) {
+                toastr.error(AppUtil.errorMsg(result), $translate.instant('Config.SwimlaneCreateFailed'));
+            })
+	}
+	
+	function preDeleteTag(tag) {
+        //normal delete
+        tag.branchStatus = 0;
+        $scope.toDeleteTag = tag;
+        AppUtil.showModal('#deleteTagDialog');
+    }
+
+	function deleteTag() {
+        NamespaceTagService.deleteTag($rootScope.pageContext.appId,
+            $rootScope.pageContext.env,
+            $rootScope.pageContext.clusterName,
+            $scope.toDeleteTag.baseInfo.namespaceName,
+            $scope.toDeleteTag.baseInfo.clusterName
+        )
+            .then(function (result) {
+                toastr.success($translate.instant('Config.TagDeleted'));
+                EventManager.emit(EventManager.EventType.REFRESH_NAMESPACE,
+                    {
+                        namespace: $scope.toDeleteTag.parentNamespace
+                    });
+            }, function (result) {
+                toastr.error(AppUtil.errorMsg(result), $translate.instant('Config.TagDeleteFailed'));
+            })
+
     }
 
     var toCreateBranchNamespace = {};

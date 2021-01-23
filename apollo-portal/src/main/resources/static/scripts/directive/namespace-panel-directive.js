@@ -1,7 +1,7 @@
 directive_module.directive('apollonspanel', directive);
 
 function directive($window, $translate, toastr, AppUtil, EventManager, PermissionService, NamespaceLockService,
-    UserService, CommitService, ReleaseService, InstanceService, NamespaceBranchService, ConfigService) {
+    UserService, CommitService, ReleaseService, InstanceService, NamespaceBranchService, ConfigService, NamespaceTagService) {
     return {
         restrict: 'E',
         templateUrl: AppUtil.prefixPath() + '/views/component/namespace-panel.html',
@@ -22,6 +22,8 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
             showNoModifyPermissionDialog: '=',
             preCreateBranch: '=',
             preDeleteBranch: '=',
+			preCreateTag: '=',
+			preDeleteTag: '=',
             showMergeAndPublishGrayTips: '=',
             showBody: "=?",
             lazyLoad: "=?"
@@ -44,6 +46,8 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
             };
 
             var operate_branch_storage_key = 'OperateBranch';
+			var operate_tag_branch_storage_key = 'OperateTagBranch';
+			
 
             scope.refreshNamespace = refreshNamespace;
             scope.switchView = switchView;
@@ -58,6 +62,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
             scope.goToParentAppConfigPage = goToParentAppConfigPage;
             scope.switchInstanceViewType = switchInstanceViewType;
             scope.switchBranch = switchBranch;
+			scope.switchTagBranch = switchTagBranch;
             scope.loadInstanceInfo = loadInstanceInfo;
             scope.refreshInstancesInfo = refreshInstancesInfo;
             scope.deleteRuleItem = deleteRuleItem;
@@ -110,10 +115,12 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
             function initNamespace(namespace, viewType) {
                 namespace.hasBranch = false;
                 namespace.isBranch = false;
+				namespace.hasTag = false;
                 namespace.displayControl = {
                     currentOperateBranch: 'master',
                     showSearchInput: false,
-                    show: scope.showBody
+                    show: scope.showBody,
+					currentOperateType: ''
                 };
                 scope.showNamespaceBody = namespace.showNamespaceBody ? true : scope.showBody;
                 namespace.viewItems = namespace.items;
@@ -128,12 +135,128 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 
                 generateNamespaceId(namespace);
                 initNamespaceBranch(namespace);
+				initNamespaceTags(namespace);
                 initNamespaceViewName(namespace);
                 initNamespaceLock(namespace);
                 initNamespaceInstancesCount(namespace);
                 initPermission(namespace);
                 initLinkedNamespace(namespace);
                 loadInstanceInfo(namespace);
+
+				function initNamespaceTags(namespace) {
+					NamespaceTagService.findNamespaceTags(scope.appId, scope.env,
+                        namespace.baseInfo.clusterName,
+                        namespace.baseInfo.namespaceName)
+						.then(function (result) {
+							if (!result) {
+                                return;
+                            }
+
+							namespace.hasTag = true;
+							namespace.tags = [];
+
+							angular.forEach(result, function(ns){
+							    var tag = ns;
+								tag.isTag = true;
+								tag.branchName = ns.baseInfo.clusterName;
+								
+								var tagName = ns.baseInfo.tag;
+								if(tagName.indexOf("swimlane_") != -1) {
+									tagName = tagName.substring(9, tagName.length);
+								}
+								
+								tag.name = tagName;
+								tag.parentNamespace = namespace;
+								tag.viewType = namespace_view_type.TABLE;
+	                            tag.isPropertiesFormat = namespace.format == 'properties';
+	                            tag.allInstances = [];//master namespace all instances
+	                            tag.latestReleaseInstances = [];
+	                            tag.latestReleaseInstancesPage = 0;
+	                            tag.instanceViewType = namespace_instance_view_type.LATEST_RELEASE;
+	                            tag.hasLoadInstances = false;
+	                            tag.displayControl = {
+	                                show: true
+	                            };
+								initUserOperateTagBranchScene(ns);
+								generateNamespaceId(tag);
+	                            initBranchItems(tag);
+	                            loadInstanceInfo(tag);
+	                            initNamespaceLock(tag);
+								namespace.tags.push(tag);
+								
+							})
+							
+							initPermission(namespace);
+							
+						});
+						
+						function initBranchItems(branch) {
+                        branch.masterItems = [];
+                        branch.branchItems = [];
+
+                        var masterItemsMap = {};
+                        branch.parentNamespace.items.forEach(function (item) {
+                            if (item.item.key) {
+                                masterItemsMap[item.item.key] = item;
+                            }
+                        });
+
+                        var branchItemsMap = {};
+
+                        var itemModifiedCnt = 0;
+                        branch.items.forEach(function (item) {
+                            var key = item.item.key;
+                            var masterItem = masterItemsMap[key];
+
+                            //modify master item and set item's masterReleaseValue
+                            if (masterItem) {
+                                item.masterItemExists = true;
+                                if (masterItem.isModified) {
+                                    item.masterReleaseValue = masterItem.oldValue;
+                                } else {
+                                    item.masterReleaseValue = masterItem.item.value;
+                                }
+
+                            } else {//delete branch item
+                                item.masterItemExists = false;
+                            }
+
+                            //delete master item. ignore
+                            if (item.isDeleted && masterItem) {
+                                if (item.masterReleaseValue != item.oldValue) {
+                                    itemModifiedCnt++;
+                                    branch.branchItems.push(item);
+                                }
+                            } else {//branch's item
+                                branchItemsMap[key] = item;
+
+                                if (item.isModified) {
+                                    itemModifiedCnt++;
+                                }
+                                branch.branchItems.push(item);
+                            }
+
+                        });
+                        branch.itemModifiedCnt = itemModifiedCnt;
+
+                        branch.parentNamespace.items.forEach(function (item) {
+                            if (item.item.key) {
+                                if (!branchItemsMap[item.item.key]) {
+                                    branch.masterItems.push(item);
+                                } else {
+                                    item.hasBranchValue = true;
+                                }
+                            }
+                        })
+
+						if(itemModifiedCnt > 0) {
+							scope.namespace.displayControl.currentOperateBranch = branch.branchName;
+							scope.namespace.displayControl.currentOperateType = 'tag';
+						}
+
+                    }
+						
+				}
 
                 function initNamespaceBranch(namespace) {
                     NamespaceBranchService.findNamespaceBranch(scope.appId, scope.env,
@@ -230,7 +353,12 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                 }
                             }
                         })
-
+						
+						if(itemModifiedCnt > 0) {
+							scope.namespace.displayControl.currentOperateBranch = branch.baseInfo.clusterName;
+							scope.namespace.displayControl.currentOperateType = 'branch';
+						}
+						
                     }
                 }
 
@@ -256,6 +384,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                         if (namespace.branch) {
                                             namespace.branch.hasModifyPermission = result.hasPermission;
                                         }
+										if(namespace.tags && namespace.tags.length > 0) {
+											angular.forEach(namespace.tags, function(ns){
+												ns.hasModifyPermission = result.hasPermission;
+											})
+										}
                                     });
                             }
                             else {
@@ -264,6 +397,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                 if (namespace.branch) {
                                     namespace.branch.hasModifyPermission = result.hasPermission;
                                 }
+								if(namespace.tags && namespace.tags.length > 0) {
+									angular.forEach(namespace.tags, function(ns){
+										ns.hasModifyPermission = result.hasPermission;
+									})
+								}
                             }
                         });
 
@@ -283,6 +421,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                         if (namespace.branch) {
                                             namespace.branch.hasReleasePermission = result.hasPermission;
                                         }
+										if(namespace.tags && namespace.tags.length > 0) {
+											angular.forEach(namespace.tags, function(ns){
+												ns.hasReleasePermission = result.hasPermission;
+											})
+										}
                                     });
                             }
                             else {
@@ -291,6 +434,11 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                                 if (namespace.branch) {
                                     namespace.branch.hasReleasePermission = result.hasPermission;
                                 }
+								if(namespace.tags && namespace.tags.length > 0) {
+									angular.forEach(namespace.tags, function(ns){
+										ns.hasReleasePermission = result.hasPermission;
+									})
+								}
                             }
                         });
                 }
@@ -356,6 +504,23 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
 
                 }
 
+				function initUserOperateTagBranchScene(namespace) {
+                    var operateBranchStorage = JSON.parse(localStorage.getItem(operate_tag_branch_storage_key));
+                    var namespaceId = [scope.appId, scope.env, scope.cluster, namespace.baseInfo.namespaceName, namespace.baseInfo.clusterName].join(
+                        "+");
+                    if (!operateBranchStorage) {
+                        operateBranchStorage = {};
+                    }
+                    if (!operateBranchStorage[namespaceId]) {
+                        operateBranchStorage[namespaceId] = namespace.baseInfo.clusterName;
+                    }
+
+                    localStorage.setItem(operate_tag_branch_storage_key, JSON.stringify(operateBranchStorage));
+
+                    switchTagBranch(operateBranchStorage[namespaceId], false);
+
+                }
+
                 function initUserOperateBranchScene(namespace) {
                     var operateBranchStorage = JSON.parse(localStorage.getItem(operate_branch_storage_key));
                     var namespaceId = [scope.appId, scope.env, scope.cluster, namespace.baseInfo.namespaceName].join(
@@ -399,15 +564,35 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                     });
             }
 
+			function switchTagBranch(branchName, forceShowBody) {
+
+                if (forceShowBody) {
+                    scope.showNamespaceBody = true;
+					scope.namespace.displayControl.currentOperateBranch = branchName;
+					scope.namespace.displayControl.currentOperateType = 'tag';
+                }
+
+                //save to local storage
+                var operateBranchStorage = JSON.parse(localStorage.getItem(operate_tag_branch_storage_key));
+                if (!operateBranchStorage) {
+                    return;
+                }
+                var namespaceId = [scope.appId, scope.env, scope.cluster, scope.namespace.baseInfo.namespaceName, branchName].join(
+                    "+");
+                operateBranchStorage[namespaceId] = branchName;
+                localStorage.setItem(operate_tag_branch_storage_key, JSON.stringify(operateBranchStorage));
+
+            }
+
             function switchBranch(branchName, forceShowBody) {
                 if (branchName != 'master') {
                     initRules(scope.namespace.branch);
                 }
                 if (forceShowBody) {
                     scope.showNamespaceBody = true;
+					scope.namespace.displayControl.currentOperateBranch = branchName;
+					scope.namespace.displayControl.currentOperateType = 'branch';
                 }
-
-                scope.namespace.displayControl.currentOperateBranch = branchName;
 
                 //save to local storage
                 var operateBranchStorage = JSON.parse(localStorage.getItem(operate_branch_storage_key));
@@ -853,7 +1038,7 @@ function directive($window, $translate, toastr, AppUtil, EventManager, Permissio
                     return;
                 }
 
-                if (namespace.isBranch) {
+                if (namespace.isBranch || namespace.isTag) {
                     namespace.mergeAndPublish = false;
                 }
 

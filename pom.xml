@@ -73,7 +73,7 @@
 	</developers>
 
 	<properties>
-		<revision>1.7.1</revision>
+		<revision>1.7.1-tuhu-SNAPSHOT</revision>
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<platform-bom.version>Cairo-SR4</platform-bom.version>
@@ -96,6 +96,32 @@
 		<github.global.server>github</github.global.server>
 		<github.global.oauth2Token>${env.GITHUB_OAUTH_TOKEN}</github.global.oauth2Token>
 	</properties>
+
+    <repositories>
+        <repository>
+            <id>nexus_public</id>
+            <url>http://nexus.tuhu.cn/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>nexus_public</id>
+            <url>http://nexus.tuhu.cn/nexus/content/groups/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>release</id>
+            <name>release仓库</name>
+            <url>http://nexus.tuhu.cn/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>snapshots</name>
+            <url>http://nexus.tuhu.cn/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 	<modules>
 		<module>apollo-buildtools</module>
@@ -1033,15 +1059,15 @@
 			</plugin>
 		</plugins>
 	</reporting>
-	<distributionManagement>
-		<repository>
-			<id>releases</id>
-			<url>${releases.repo}</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshots</id>
-			<url>${snapshots.repo}</url>
-		</snapshotRepository>
-	</distributionManagement>
+<!-- 	<distributionManagement> -->
+<!-- 		<repository> -->
+<!-- 			<id>releases</id> -->
+<!-- 			<url>${releases.repo}</url> -->
+<!-- 		</repository> -->
+<!-- 		<snapshotRepository> -->
+<!-- 			<id>snapshots</id> -->
+<!-- 			<url>${snapshots.repo}</url> -->
+<!-- 		</snapshotRepository> -->
+<!-- 	</distributionManagement> -->
 </project>
 

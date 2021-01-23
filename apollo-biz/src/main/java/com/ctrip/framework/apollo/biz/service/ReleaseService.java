@@ -53,6 +53,7 @@ public class ReleaseService {
   private final NamespaceLockService namespaceLockService;
   private final NamespaceService namespaceService;
   private final NamespaceBranchService namespaceBranchService;
+  private final NamespaceTagService namespaceTagService;
   private final ReleaseHistoryService releaseHistoryService;
   private final ItemSetService itemSetService;
 
@@ -63,6 +64,7 @@ public class ReleaseService {
       final NamespaceLockService namespaceLockService,
       final NamespaceService namespaceService,
       final NamespaceBranchService namespaceBranchService,
+      final NamespaceTagService namespaceTagService,
       final ReleaseHistoryService releaseHistoryService,
       final ItemSetService itemSetService) {
     this.releaseRepository = releaseRepository;
@@ -71,6 +73,7 @@ public class ReleaseService {
     this.namespaceLockService = namespaceLockService;
     this.namespaceService = namespaceService;
     this.namespaceBranchService = namespaceBranchService;
+    this.namespaceTagService = namespaceTagService;
     this.releaseHistoryService = releaseHistoryService;
     this.itemSetService = itemSetService;
   }
@@ -188,12 +191,17 @@ public class ReleaseService {
                                     releaseName, releaseComment, operator, isEmergencyPublish);
     }
 
-    Namespace childNamespace = namespaceService.findChildNamespace(namespace);
+//    Namespace childNamespace = namespaceService.findChildNamespace(namespace);
+    
+    List<Namespace> childNamespaces = namespaceService.findChildNamespaces(namespace);
 
     Release previousRelease = null;
-    if (childNamespace != null) {
-      previousRelease = findLatestActiveRelease(namespace);
-    }
+//    if (childNamespace != null) {
+//      previousRelease = findLatestActiveRelease(namespace);
+//    }
+    if (childNamespaces != null && !childNamespaces.isEmpty()) {
+        previousRelease = findLatestActiveRelease(namespace);
+      }
 
     //master release
     Map<String, Object> operationContext = Maps.newLinkedHashMap();
@@ -203,10 +211,12 @@ public class ReleaseService {
                                     operator, ReleaseOperation.NORMAL_RELEASE, operationContext);
 
     //merge to branch and auto release
-    if (childNamespace != null) {
-      mergeFromMasterAndPublishBranch(namespace, childNamespace, operateNamespaceItems,
-                                      releaseName, releaseComment, operator, previousRelease,
-                                      release, isEmergencyPublish);
+    if (childNamespaces != null && !childNamespaces.isEmpty()) {
+    	for(Namespace childNamespace : childNamespaces) {
+    		mergeFromMasterAndPublishBranch(namespace, childNamespace, operateNamespaceItems,
+                    releaseName, releaseComment, operator, previousRelease,
+                    release, isEmergencyPublish);
+    	}
     }
 
     return release;
@@ -364,6 +374,12 @@ public class ReleaseService {
                                                                                   childNamespace.getNamespaceName(),
                                                                                   childNamespace.getClusterName(),
                                                                                   release.getId(), operator);
+    
+    namespaceTagService.updateTagRulesReleaseId(childNamespace.getAppId(),
+            parentNamespace.getClusterName(),
+            childNamespace.getNamespaceName(),
+            childNamespace.getClusterName(),
+            release.getId(), operator);
 
     if (grayReleaseRule != null) {
       releaseOperationContext.put(ReleaseOperationContext.RULES, GrayReleaseRuleItemTransformer

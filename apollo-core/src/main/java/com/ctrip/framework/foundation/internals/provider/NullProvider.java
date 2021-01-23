@@ -77,4 +77,9 @@ public class NullProvider implements ApplicationProvider, NetworkProvider, Serve
   public String toString() {
     return "(NullProvider)";
   }
+
+@Override
+public String getAppTag() {
+	return null;
+}
 }

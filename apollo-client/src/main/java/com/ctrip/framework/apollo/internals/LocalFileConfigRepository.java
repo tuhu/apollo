@@ -276,7 +276,7 @@ public class LocalFileConfigRepository extends AbstractConfigRepository
   File assembleLocalCacheFile(File baseDir, String namespace) {
     String fileName =
         String.format("%s.properties", Joiner.on(ConfigConsts.CLUSTER_NAMESPACE_SEPARATOR)
-            .join(m_configUtil.getAppId(), m_configUtil.getCluster(), namespace));
+            .join(m_configUtil.getAppId(), m_configUtil.getAppTag(), m_configUtil.getCluster(), namespace));
     return new File(baseDir, fileName);
   }
 }

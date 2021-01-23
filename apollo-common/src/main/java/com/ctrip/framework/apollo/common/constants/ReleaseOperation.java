@@ -13,4 +13,6 @@ public interface ReleaseOperation {
   int MATER_ROLLBACK_MERGE_TO_GRAY = 6;
   int ABANDON_GRAY_RELEASE = 7;
   int GRAY_RELEASE_DELETED_AFTER_MERGE = 8;
+  int APPLY_TAG_RULES = 9;
+  int ABANDON_TAG_RELEASE = 10;
 }

@@ -1,5 +1,18 @@
 package com.ctrip.framework.apollo.configservice.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.util.Collection;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import com.ctrip.framework.apollo.common.entity.AppNamespace;
 import com.ctrip.framework.apollo.configservice.service.AppNamespaceServiceWithCache;
 import com.ctrip.framework.apollo.core.ConfigConsts;
@@ -7,18 +20,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Collection;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Jason Song(song_s@ctrip.com)
@@ -42,6 +43,7 @@ public class WatchKeysUtilTest {
   private String defaultCluster;
   private String someDC;
   private String somePublicAppId;
+  private String appTag = "swim1";
 
   @Before
   public void setUp() throws Exception {
@@ -79,7 +81,7 @@ public class WatchKeysUtilTest {
   @Test
   public void testAssembleAllWatchKeysWithOneNamespaceAndDefaultCluster() throws Exception {
     Set<String> watchKeys =
-        watchKeysUtil.assembleAllWatchKeys(someAppId, defaultCluster, someNamespace, null);
+        watchKeysUtil.assembleAllWatchKeys(someAppId, defaultCluster, someNamespace, null, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster);
 
@@ -90,7 +92,7 @@ public class WatchKeysUtilTest {
   @Test
   public void testAssembleAllWatchKeysWithOneNamespaceAndSomeDC() throws Exception {
     Set<String> watchKeys =
-        watchKeysUtil.assembleAllWatchKeys(someAppId, someDC, someNamespace, someDC);
+        watchKeysUtil.assembleAllWatchKeys(someAppId, someDC, someNamespace, someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someDC);
 
@@ -101,7 +103,7 @@ public class WatchKeysUtilTest {
   @Test
   public void testAssembleAllWatchKeysWithOneNamespaceAndSomeDCAndSomeCluster() throws Exception {
     Set<String> watchKeys =
-        watchKeysUtil.assembleAllWatchKeys(someAppId, someCluster, someNamespace, someDC);
+        watchKeysUtil.assembleAllWatchKeys(someAppId, someCluster, someNamespace, someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someCluster, someDC);
 
@@ -113,7 +115,7 @@ public class WatchKeysUtilTest {
   public void testAssembleAllWatchKeysWithMultipleNamespaces() throws Exception {
     Multimap<String, String> watchKeysMap =
         watchKeysUtil.assembleAllWatchKeys(someAppId, someCluster,
-            Sets.newHashSet(someNamespace, anotherNamespace), someDC);
+            Sets.newHashSet(someNamespace, anotherNamespace), someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someCluster, someDC);
 
@@ -126,7 +128,7 @@ public class WatchKeysUtilTest {
   public void testAssembleAllWatchKeysWithPrivateAndPublicNamespaces() throws Exception {
     Multimap<String, String> watchKeysMap =
         watchKeysUtil.assembleAllWatchKeys(someAppId, someCluster,
-            Sets.newHashSet(someNamespace, anotherNamespace, somePublicNamespace), someDC);
+            Sets.newHashSet(someNamespace, anotherNamespace, somePublicNamespace), someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someCluster, someDC);
 
@@ -142,7 +144,7 @@ public class WatchKeysUtilTest {
   public void testAssembleWatchKeysForNoAppIdPlaceHolder() throws Exception {
     Multimap<String, String> watchKeysMap =
         watchKeysUtil.assembleAllWatchKeys(ConfigConsts.NO_APPID_PLACEHOLDER, someCluster,
-            Sets.newHashSet(someNamespace, anotherNamespace), someDC);
+            Sets.newHashSet(someNamespace, anotherNamespace), someDC, appTag);
 
     assertTrue(watchKeysMap.isEmpty());
   }
@@ -151,7 +153,7 @@ public class WatchKeysUtilTest {
   public void testAssembleWatchKeysForNoAppIdPlaceHolderAndPublicNamespace() throws Exception {
     Multimap<String, String> watchKeysMap =
         watchKeysUtil.assembleAllWatchKeys(ConfigConsts.NO_APPID_PLACEHOLDER, someCluster,
-            Sets.newHashSet(someNamespace, somePublicNamespace), someDC);
+            Sets.newHashSet(someNamespace, somePublicNamespace), someDC, appTag);
 
     Set<String> clusters = Sets.newHashSet(defaultCluster, someCluster, someDC);
 

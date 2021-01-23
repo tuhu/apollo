@@ -97,6 +97,7 @@ public class NotificationControllerV2Test {
   public void testPollNotificationWithDefaultNamespace() throws Exception {
     String someWatchKey = "someKey";
     String anotherWatchKey = "anotherKey";
+    String appTag = "swim1";
 
     Multimap<String, String> watchKeysMap =
         assembleMultiMap(defaultNamespace, Lists.newArrayList(someWatchKey, anotherWatchKey));
@@ -106,12 +107,12 @@ public class NotificationControllerV2Test {
 
     when(watchKeysUtil
         .assembleAllWatchKeys(someAppId, someCluster, Sets.newHashSet(defaultNamespace),
-            someDataCenter)).thenReturn(
+            someDataCenter, appTag)).thenReturn(
         watchKeysMap);
 
     DeferredResult<ResponseEntity<List<ApolloConfigNotification>>>
         deferredResult = controller
-        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter,
+        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter, appTag,
             someClientIp);
 
     assertEquals(watchKeysMap.size(), deferredResults.size());
@@ -126,6 +127,7 @@ public class NotificationControllerV2Test {
 
     String someWatchKey = "someKey";
     String anotherWatchKey = "anotherKey";
+    String appTag = "swim1";
 
     Multimap<String, String> watchKeysMap =
         assembleMultiMap(defaultNamespace, Lists.newArrayList(someWatchKey, anotherWatchKey));
@@ -135,12 +137,12 @@ public class NotificationControllerV2Test {
 
     when(watchKeysUtil
         .assembleAllWatchKeys(someAppId, someCluster, Sets.newHashSet(defaultNamespace),
-            someDataCenter)).thenReturn(
+            someDataCenter, appTag)).thenReturn(
         watchKeysMap);
 
     DeferredResult<ResponseEntity<List<ApolloConfigNotification>>>
         deferredResult = controller
-        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter,
+        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter, appTag,
             someClientIp);
 
     assertEquals(watchKeysMap.size(), deferredResults.size());
@@ -162,6 +164,7 @@ public class NotificationControllerV2Test {
     String anotherWatchKey = "anotherKey";
     String somePublicWatchKey = "somePublicWatchKey";
     String somePublicFileWatchKey = "somePublicFileWatchKey";
+    String appTag = "swim1";
 
     Multimap<String, String> watchKeysMap =
         assembleMultiMap(defaultNamespace, Lists.newArrayList(someWatchKey, anotherWatchKey));
@@ -179,12 +182,12 @@ public class NotificationControllerV2Test {
     when(watchKeysUtil
         .assembleAllWatchKeys(someAppId, someCluster,
             Sets.newHashSet(defaultNamespace, somePublicNamespace, somePublicNamespaceAsFile),
-            someDataCenter)).thenReturn(
+            someDataCenter, appTag)).thenReturn(
         watchKeysMap);
 
     DeferredResult<ResponseEntity<List<ApolloConfigNotification>>>
         deferredResult = controller
-        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter,
+        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter, appTag,
             someClientIp);
 
     assertEquals(watchKeysMap.size(), deferredResults.size());
@@ -193,13 +196,14 @@ public class NotificationControllerV2Test {
 
     verify(watchKeysUtil, times(1)).assembleAllWatchKeys(someAppId, someCluster,
         Sets.newHashSet(defaultNamespace, somePublicNamespace, somePublicNamespaceAsFile),
-        someDataCenter);
+        someDataCenter, appTag);
   }
 
   @Test
   public void testPollNotificationWithMultipleNamespaceWithNotificationIdOutDated()
       throws Exception {
     String someWatchKey = "someKey";
+    String appTag = "swim1";
     String anotherWatchKey = Joiner.on(ConfigConsts.CLUSTER_NAMESPACE_SEPARATOR)
         .join(someAppId, someCluster, somePublicNamespace);
     String yetAnotherWatchKey = Joiner.on(ConfigConsts.CLUSTER_NAMESPACE_SEPARATOR)
@@ -214,7 +218,7 @@ public class NotificationControllerV2Test {
 
     when(watchKeysUtil
         .assembleAllWatchKeys(someAppId, someCluster,
-            Sets.newHashSet(defaultNamespace, somePublicNamespace), someDataCenter)).thenReturn(
+            Sets.newHashSet(defaultNamespace, somePublicNamespace), someDataCenter, appTag)).thenReturn(
         watchKeysMap);
 
     ReleaseMessage someReleaseMessage = mock(ReleaseMessage.class);
@@ -233,7 +237,7 @@ public class NotificationControllerV2Test {
 
     DeferredResult<ResponseEntity<List<ApolloConfigNotification>>>
         deferredResult = controller
-        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter,
+        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter, appTag,
             someClientIp);
 
     ResponseEntity<List<ApolloConfigNotification>> result =
@@ -253,6 +257,7 @@ public class NotificationControllerV2Test {
   @Test
   public void testPollNotificationWithMultipleNamespacesAndHandleMessage() throws Exception {
     String someWatchKey = "someKey";
+    String appTag = "swim1";
     String anotherWatchKey = Joiner.on(ConfigConsts.CLUSTER_NAMESPACE_SEPARATOR)
         .join(someAppId, someCluster, somePublicNamespace);
 
@@ -263,7 +268,7 @@ public class NotificationControllerV2Test {
 
     when(watchKeysUtil
         .assembleAllWatchKeys(someAppId, someCluster,
-            Sets.newHashSet(defaultNamespace, somePublicNamespace), someDataCenter)).thenReturn(
+            Sets.newHashSet(defaultNamespace, somePublicNamespace), someDataCenter, appTag)).thenReturn(
         watchKeysMap);
 
     String notificationAsString =
@@ -272,7 +277,7 @@ public class NotificationControllerV2Test {
 
     DeferredResult<ResponseEntity<List<ApolloConfigNotification>>>
         deferredResult = controller
-        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter,
+        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter, appTag,
             someClientIp);
 
     assertEquals(watchKeysMap.size(), deferredResults.size());
@@ -303,6 +308,7 @@ public class NotificationControllerV2Test {
         .join(someAppId, someCluster, defaultNamespace);
     int someBatch = 1;
     int someBatchInterval = 10;
+    String appTag = "swim1";
 
     Multimap<String, String> watchKeysMap =
         assembleMultiMap(defaultNamespace, Lists.newArrayList(someWatchKey));
@@ -312,18 +318,18 @@ public class NotificationControllerV2Test {
 
     when(watchKeysUtil
         .assembleAllWatchKeys(someAppId, someCluster, Sets.newHashSet(defaultNamespace),
-            someDataCenter)).thenReturn(watchKeysMap);
+            someDataCenter, appTag)).thenReturn(watchKeysMap);
 
     when(bizConfig.releaseMessageNotificationBatch()).thenReturn(someBatch);
     when(bizConfig.releaseMessageNotificationBatchIntervalInMilli()).thenReturn(someBatchInterval);
 
     DeferredResult<ResponseEntity<List<ApolloConfigNotification>>>
         deferredResult = controller
-        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter,
+        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter, appTag,
             someClientIp);
     DeferredResult<ResponseEntity<List<ApolloConfigNotification>>>
         anotherDeferredResult = controller
-        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter,
+        .pollNotification(someAppId, someCluster, notificationAsString, someDataCenter, appTag,
             someClientIp);
 
     long someId = 1;
@@ -342,6 +348,7 @@ public class NotificationControllerV2Test {
 
   @Test
   public void testPollNotificationWithIncorrectCase() throws Exception {
+	String appTag = "swim1";
     String appIdWithIncorrectCase = someAppId.toUpperCase();
     String namespaceWithIncorrectCase = defaultNamespace.toUpperCase();
     String someMessage = Joiner.on(ConfigConsts.CLUSTER_NAMESPACE_SEPARATOR)
@@ -359,11 +366,11 @@ public class NotificationControllerV2Test {
     when(namespaceUtil.normalizeNamespace(appIdWithIncorrectCase, namespaceWithIncorrectCase)).thenReturn(defaultNamespace);
     when(watchKeysUtil
         .assembleAllWatchKeys(appIdWithIncorrectCase, someCluster, Sets.newHashSet(defaultNamespace),
-            someDataCenter)).thenReturn(watchKeysMap);
+            someDataCenter, appTag)).thenReturn(watchKeysMap);
 
     DeferredResult<ResponseEntity<List<ApolloConfigNotification>>>
         deferredResult = controller
-        .pollNotification(appIdWithIncorrectCase, someCluster, notificationAsString, someDataCenter,
+        .pollNotification(appIdWithIncorrectCase, someCluster, notificationAsString, someDataCenter, appTag,
             someClientIp);
 
     long someId = 1;

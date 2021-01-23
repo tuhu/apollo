@@ -106,6 +106,7 @@ public class RemoteConfigLongPollService {
     }
     try {
       final String appId = m_configUtil.getAppId();
+      final String appTag = m_configUtil.getAppTag();
       final String cluster = m_configUtil.getCluster();
       final String dataCenter = m_configUtil.getDataCenter();
       final String secret = m_configUtil.getAccessKeySecret();
@@ -121,7 +122,7 @@ public class RemoteConfigLongPollService {
               //ignore
             }
           }
-          doLongPollingRefresh(appId, cluster, dataCenter, secret);
+          doLongPollingRefresh(appId, appTag, cluster, dataCenter, secret);
         }
       });
     } catch (Throwable ex) {
@@ -137,7 +138,7 @@ public class RemoteConfigLongPollService {
     this.m_longPollingStopped.compareAndSet(false, true);
   }
 
-  private void doLongPollingRefresh(String appId, String cluster, String dataCenter, String secret) {
+  private void doLongPollingRefresh(String appId, String appTag, String cluster, String dataCenter, String secret) {
     final Random random = new Random();
     ServiceDTO lastServiceDto = null;
     while (!m_longPollingStopped.get() && !Thread.currentThread().isInterrupted()) {
@@ -157,7 +158,7 @@ public class RemoteConfigLongPollService {
         }
 
         url =
-            assembleLongPollRefreshUrl(lastServiceDto.getHomepageUrl(), appId, cluster, dataCenter,
+            assembleLongPollRefreshUrl(lastServiceDto.getHomepageUrl(), appId, appTag, cluster, dataCenter,
                 m_notifications);
 
         logger.debug("Long polling from {}", url);
@@ -276,10 +277,13 @@ public class RemoteConfigLongPollService {
     return STRING_JOINER.join(m_longPollNamespaces.keySet());
   }
 
-  String assembleLongPollRefreshUrl(String uri, String appId, String cluster, String dataCenter,
+  String assembleLongPollRefreshUrl(String uri, String appId, String appTag, String cluster, String dataCenter,
                                     Map<String, Long> notificationsMap) {
     Map<String, String> queryParams = Maps.newHashMap();
     queryParams.put("appId", queryParamEscaper.escape(appId));
+    if (!Strings.isNullOrEmpty(appTag)) {
+    	queryParams.put("appTag", queryParamEscaper.escape(appTag));
+    }
     queryParams.put("cluster", queryParamEscaper.escape(cluster));
     queryParams
         .put("notifications", queryParamEscaper.escape(assembleNotifications(notificationsMap)));

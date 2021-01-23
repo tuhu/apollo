@@ -1,8 +1,12 @@
 package com.ctrip.framework.apollo.portal.api;
 
-import com.ctrip.framework.apollo.common.dto.*;
-import com.ctrip.framework.apollo.portal.environment.Env;
-import com.google.common.base.Joiner;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -14,7 +18,23 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.util.*;
+import com.ctrip.framework.apollo.common.dto.AccessKeyDTO;
+import com.ctrip.framework.apollo.common.dto.AppDTO;
+import com.ctrip.framework.apollo.common.dto.AppNamespaceDTO;
+import com.ctrip.framework.apollo.common.dto.ClusterDTO;
+import com.ctrip.framework.apollo.common.dto.CommitDTO;
+import com.ctrip.framework.apollo.common.dto.GrayReleaseRuleDTO;
+import com.ctrip.framework.apollo.common.dto.InstanceDTO;
+import com.ctrip.framework.apollo.common.dto.ItemChangeSets;
+import com.ctrip.framework.apollo.common.dto.ItemDTO;
+import com.ctrip.framework.apollo.common.dto.NamespaceDTO;
+import com.ctrip.framework.apollo.common.dto.NamespaceLockDTO;
+import com.ctrip.framework.apollo.common.dto.PageDTO;
+import com.ctrip.framework.apollo.common.dto.ReleaseDTO;
+import com.ctrip.framework.apollo.common.dto.ReleaseHistoryDTO;
+import com.ctrip.framework.apollo.common.dto.TagNamespaceDTO;
+import com.ctrip.framework.apollo.portal.environment.Env;
+import com.google.common.base.Joiner;
 
 
 @Service
@@ -473,6 +493,40 @@ public class AdminServiceAPI {
         String namespaceName, String branchName, String operator) {
       restTemplate.delete(env,
           "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/branches/{branchName}?operator={operator}",
+          appId, clusterName, namespaceName, branchName, operator);
+    }
+  }
+  
+  @Service
+  public static class NamespaceTagAPI extends API {
+
+    public NamespaceDTO createTagBranch(String appId, Env env, String clusterName,
+        String namespaceName, String tag, String operator) {
+      return restTemplate
+          .post(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/{tag}?operator={operator}",
+              null, NamespaceDTO.class, appId, clusterName, namespaceName, tag, operator);
+    }
+
+    public TagNamespaceDTO findTagBranch(String appId, Env env, String clusterName,
+        String namespaceName, String tag) {
+      return restTemplate.get(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/{tag}",
+    		  TagNamespaceDTO.class, appId, clusterName, namespaceName, tag);
+    }
+    
+    public List<TagNamespaceDTO> findTagBranchs(String appId, Env env, String clusterName,
+        String namespaceName) {
+    	TagNamespaceDTO[] insts =  restTemplate.get(env, "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branches",
+    			TagNamespaceDTO[].class, appId, clusterName, namespaceName);
+    	if(insts != null && insts.length > 0) {
+    		return Arrays.asList(insts);
+    	}
+    	return new ArrayList<TagNamespaceDTO>();
+    }
+
+    public void deleteTagBranch(String appId, Env env, String clusterName,
+        String namespaceName, String branchName, String operator) {
+      restTemplate.delete(env,
+          "/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/tag/branch/{branchName}?operator={operator}",
           appId, clusterName, namespaceName, branchName, operator);
     }
   }

@@ -5,13 +5,17 @@
             <div class="modal-header panel-primary">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                         aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" ng-show="!toReleaseNamespace.isBranch">
+                <h4 class="modal-title" ng-show="!(toReleaseNamespace.isTag || toReleaseNamespace.isBranch)">
                     {{'Component.Publish.Title' | translate }}
                     <small>{{'Component.Publish.Tips' | translate:this }}</small>
                 </h4>
                 <h4 class="modal-title" ng-show="toReleaseNamespace.isBranch && !toReleaseNamespace.mergeAndPublish">
                     {{'Component.Publish.Grayscale' | translate }}
                     <small>{{'Component.Publish.GrayscaleTips' | translate }}</small>
+                </h4>
+                <h4 class="modal-title" ng-show="toReleaseNamespace.isTag && !toReleaseNamespace.mergeAndPublish">
+                    {{'Component.Publish.Swimlane' | translate }}
+                    <small>{{'Component.Publish.SwimlaneTips' | translate }}</small>
                 </h4>
                 <h4 class="modal-title" ng-show="toReleaseNamespace.isBranch && toReleaseNamespace.mergeAndPublish">
                     {{'Component.Publish.AllPublish' | translate }}
@@ -41,15 +45,15 @@
                         ng-if="toReleaseNamespace.isPropertiesFormat">{{'Component.Publish.Changes' | translate }}</label>
 
                     <div class="col-sm-10"
-                        ng-if="(!toReleaseNamespace.isBranch && toReleaseNamespace.itemModifiedCnt)
-                                    || (toReleaseNamespace.isBranch && toReleaseNamespace.itemModifiedCnt)
-                                    || (toReleaseNamespace.isBranch && toReleaseNamespace.mergeAndPublish && toReleaseNamespace.branchItems.length)"
+                        ng-if="(!(toReleaseNamespace.isTag || toReleaseNamespace.isBranch) && toReleaseNamespace.itemModifiedCnt)
+                                    || ((toReleaseNamespace.isTag || toReleaseNamespace.isBranch) && toReleaseNamespace.itemModifiedCnt)
+                                    || ((toReleaseNamespace.isTag || toReleaseNamespace.isBranch) && toReleaseNamespace.mergeAndPublish && toReleaseNamespace.branchItems.length)"
                         valdr-form-group>
 
                         <!--properties format-->
                         <!--normal release-->
                         <table class="table table-bordered table-striped text-center table-hover"
-                            ng-if="toReleaseNamespace.isPropertiesFormat && !toReleaseNamespace.isBranch">
+                            ng-if="toReleaseNamespace.isPropertiesFormat && !(toReleaseNamespace.isTag || toReleaseNamespace.isBranch)">
                             <thead>
                                 <tr>
                                     <th>
@@ -102,7 +106,7 @@
 
                         <!--branch gray release-->
                         <table class="table table-bordered table-striped text-center table-hover" ng-if="toReleaseNamespace.isPropertiesFormat &&
-                               toReleaseNamespace.isBranch && !toReleaseNamespace.mergeAndPublish">
+                               (toReleaseNamespace.isTag || toReleaseNamespace.isBranch) && !toReleaseNamespace.mergeAndPublish">
                             <thead>
                                 <tr>
                                     <th>
@@ -111,11 +115,17 @@
                                     <th>
                                         {{'Component.Publish.MasterValue' | translate }}
                                     </th>
-                                    <th>
+                                    <th ng-if="toReleaseNamespace.isBranch">
                                         {{'Component.Publish.GrayPublishedValue' | translate }}
                                     </th>
-                                    <th>
+                                    <th ng-if="toReleaseNamespace.isBranch">
                                         {{'Component.Publish.GrayNoPublishedValue' | translate }}
+                                    </th>
+                                    <th ng-if="toReleaseNamespace.isTag">
+                                        {{'Component.Publish.SwimlanePublishedValue' | translate }}
+                                    </th>
+                                    <th ng-if="toReleaseNamespace.isTag">
+                                        {{'Component.Publish.SwimlaneNoPublishedValue' | translate }}
                                     </th>
                                     <th>
                                         {{'Component.Publish.ModifyUser' | translate }}
@@ -153,22 +163,22 @@
 
                         <!--branch updateAndPublish and publish-->
                         <table class="table table-bordered table-striped text-center table-hover" ng-if="toReleaseNamespace.isPropertiesFormat &&
-                               toReleaseNamespace.isBranch && toReleaseNamespace.mergeAndPublish">
+                               (toReleaseNamespace.isBranch || toReleaseNamespace.isTag) && toReleaseNamespace.mergeAndPublish">
                             <thead>
                                 <tr>
                                     <th>
                                         {{'Component.Publish.Key' | translate }}
                                     </th>
-                                    <th ng-if="toReleaseNamespace.isBranch">
+                                    <th ng-if="toReleaseNamespace.isTag || toReleaseNamespace.isBranch">
                                         {{'Component.Publish.MasterValue' | translate }}
                                     </th>
                                     <th ng-if="toReleaseNamespace.isBranch && toReleaseNamespace.mergeAndPublish">
                                         {{'Component.Publish.GrayValue' | translate }}
                                     </th>
-                                    <th ng-if="!toReleaseNamespace.isBranch || !toReleaseNamespace.mergeAndPublish">
+                                    <th ng-if="!(toReleaseNamespace.isTag || toReleaseNamespace.isBranch) || !toReleaseNamespace.mergeAndPublish">
                                         {{'Component.Publish.PublishedValue' | translate }}
                                     </th>
-                                    <th ng-if="!toReleaseNamespace.isBranch || !toReleaseNamespace.mergeAndPublish">
+                                    <th ng-if="!(toReleaseNamespace.isTag || toReleaseNamespace.isBranch) || !toReleaseNamespace.mergeAndPublish">
                                         {{'Component.Publish.NoPublishedValue' | translate }}
                                     </th>
                                     <th>
@@ -214,7 +224,7 @@
 
                     </div>
                     <div class="col-sm-5"
-                        ng-show="(!toReleaseNamespace.isBranch && !toReleaseNamespace.itemModifiedCnt)"
+                        ng-show="(!toReleaseNamespace.isTag && !toReleaseNamespace.isBranch && !toReleaseNamespace.itemModifiedCnt)"
                         valdr-form-group>
                         <label class="form-control-static">
                             {{'Component.Publish.ItemNoChange' | translate }}
@@ -232,6 +242,20 @@
                         valdr-form-group>
                         <label class="form-control-static">
                             {{'Component.Publish.NoGrayItems' | translate }}
+                        </label>
+                    </div>
+                    <div class="col-sm-5"
+                        ng-show="(toReleaseNamespace.isTag && !toReleaseNamespace.mergeAndPublish && !toReleaseNamespace.itemModifiedCnt)"
+                        valdr-form-group>
+                        <label class="form-control-static">
+                            {{'Component.Publish.SwimlaneItemNoChange' | translate }}
+                        </label>
+                    </div>
+                    <div class="col-sm-5"
+                        ng-show="(toReleaseNamespace.isTag && toReleaseNamespace.mergeAndPublish && toReleaseNamespace.branchItems.length == 0)"
+                        valdr-form-group>
+                        <label class="form-control-static">
+                            {{'Component.Publish.NoSwimlaneItems' | translate }}
                         </label>
                     </div>
 
@@ -262,7 +286,7 @@
                     data-dismiss="modal">{{'Common.Cancel' | translate }}</button>
                 <button type="submit" class="btn btn-primary"
                     ng-disabled="releaseForm.$invalid || releaseBtnDisabled
-                        || (toReleaseNamespace.isBranch && toReleaseNamespace.mergeAndPublish && toReleaseNamespace.branchItems.length == 0)">
+                        || ((toReleaseNamespace.isTag || toReleaseNamespace.isBranch) && toReleaseNamespace.mergeAndPublish && toReleaseNamespace.branchItems.length == 0)">
                     {{'Component.Publish.OpPublish' | translate }}
                 </button>
             </div>

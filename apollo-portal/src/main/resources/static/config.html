@@ -212,7 +212,7 @@
                 show-text="showText"
                 show-no-modify-permission-dialog="showNoModifyPermissionDialog" show-body="namespaces.length < 3"
                 lazy-load="namespaces.length > 10" pre-create-branch="preCreateBranch"
-                pre-delete-branch="preDeleteBranch">
+                pre-delete-branch="preDeleteBranch" pre-create-tag="preCreateTag" pre-delete-tag="preDeleteTag">
             </apollonspanel>
 
             <releasemodal app-id="pageContext.appId" env="pageContext.env" cluster="pageContext.clusterName">
@@ -283,6 +283,12 @@
                 apollo-detail="'Config.DeleteBranch.DialogContent' | translate" apollo-show-cancel-btn="true"
                 apollo-confirm="deleteBranch">
             </apolloconfirmdialog>
+            
+            <apolloconfirmdialog apollo-dialog-id="'deleteTagDialog'"
+                apollo-title="'Config.DeleteTag.DialogTitle' | translate"
+                apollo-detail="'Config.DeleteTag.DialogContent' | translate" apollo-show-cancel-btn="true"
+                apollo-confirm="deleteTag">
+            </apolloconfirmdialog>
 
             <apolloconfirmdialog apollo-dialog-id="'updateRuleTips'"
                 apollo-title="'Config.UpdateRuleTips.DialogTitle' | translate"
@@ -341,6 +347,27 @@
                                 data-dismiss="modal">{{'Common.Cancel' | translate}}</button>
                             <button type="button" class="btn btn-primary" data-dismiss="modal"
                                 ng-click="createBranch()">{{'Common.Ok' | translate}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal fade" id="createTagTips" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header panel-primary">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title">{{'Config.CreateTagTips.DialogTitle' | translate}}</h4>
+                        </div>
+                        <div class="modal-body">
+                        	{{'Config.CreateTagTips.Swimlane.Name' | translate}} <input type="text" ng-model="swimlane.name">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default"
+                                data-dismiss="modal">{{'Common.Cancel' | translate}}</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                ng-click="createTag()">{{'Common.Ok' | translate}}</button>
                         </div>
                     </div>
                 </div>
@@ -413,6 +440,7 @@
     <script type="application/javascript" src="scripts/services/InstanceService.js"></script>
     <script type="application/javascript" src="scripts/services/FavoriteService.js"></script>
     <script type="application/javascript" src="scripts/services/NamespaceBranchService.js"></script>
+    <script type="application/javascript" src="scripts/services/NamespaceTagService.js"></script>
     <script type="application/javascript" src="scripts/services/EventManager.js"></script>
 
 

@@ -480,6 +480,7 @@ public class RemoteConfigLongPollServiceTest {
   public void testAssembleLongPollRefreshUrl() throws Exception {
     String someUri = someServerUrl;
     String someAppId = "someAppId";
+    String someAppTag = "";
     String someCluster = "someCluster+ &.-_someSign";
     String someNamespace = "someName";
     long someNotificationId = 1;
@@ -487,7 +488,7 @@ public class RemoteConfigLongPollServiceTest {
 
     String longPollRefreshUrl =
         remoteConfigLongPollService
-            .assembleLongPollRefreshUrl(someUri, someAppId, someCluster, null, notificationsMap);
+            .assembleLongPollRefreshUrl(someUri, someAppId, someAppTag, someCluster, null, notificationsMap);
 
     assertTrue(longPollRefreshUrl.contains(someServerUrl + "/notifications/v2?"));
     assertTrue(longPollRefreshUrl.contains("appId=" + someAppId));
@@ -501,6 +502,7 @@ public class RemoteConfigLongPollServiceTest {
   public void testAssembleLongPollRefreshUrlWithMultipleNamespaces() throws Exception {
     String someUri = someServerUrl;
     String someAppId = "someAppId";
+    String someAppTag = "";
     String someCluster = "someCluster+ &.-_someSign";
     String someNamespace = "someName";
     String anotherNamespace = "anotherName";
@@ -511,7 +513,7 @@ public class RemoteConfigLongPollServiceTest {
 
     String longPollRefreshUrl =
         remoteConfigLongPollService
-            .assembleLongPollRefreshUrl(someUri, someAppId, someCluster, null, notificationsMap);
+            .assembleLongPollRefreshUrl(someUri, someAppId, someAppTag, someCluster, null, notificationsMap);
 
     assertTrue(longPollRefreshUrl.contains(someServerUrl + "/notifications/v2?"));
     assertTrue(longPollRefreshUrl.contains("appId=" + someAppId));

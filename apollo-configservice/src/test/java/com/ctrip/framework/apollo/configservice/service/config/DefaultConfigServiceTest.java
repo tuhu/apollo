@@ -27,6 +27,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class DefaultConfigServiceTest {
   private DefaultConfigService configService;
   private String someClientAppId;
+  private String someClientAppTag;
   private String someConfigAppId;
   private String someClusterName;
   private String defaultClusterName;
@@ -50,6 +51,7 @@ public class DefaultConfigServiceTest {
     ReflectionTestUtils.setField(configService, "grayReleaseRulesHolder", grayReleaseRulesHolder);
 
     someClientAppId = "1234";
+    someClientAppTag = "swim1";
     someConfigAppId = "1";
     someClusterName = "someClusterName";
     defaultClusterName = ConfigConsts.CLUSTER_NAME_DEFAULT;
@@ -67,7 +69,7 @@ public class DefaultConfigServiceTest {
         .thenReturn(someRelease);
 
     Release release = configService
-        .loadConfig(someClientAppId, someClientIp, someConfigAppId, someClusterName, defaultNamespaceName, someDataCenter,
+        .loadConfig(someClientAppId, someClientAppTag, someClientIp, someConfigAppId, someClusterName, defaultNamespaceName, someDataCenter,
             someNotificationMessages);
 
     verify(releaseService, times(1)).findLatestActiveRelease(someConfigAppId, someClusterName, defaultNamespaceName);
@@ -85,7 +87,7 @@ public class DefaultConfigServiceTest {
     when(releaseService.findActiveOne(grayReleaseId)).thenReturn(grayRelease);
 
     Release release = configService
-        .loadConfig(someClientAppId, someClientIp, someConfigAppId, someClusterName, defaultNamespaceName, someDataCenter,
+        .loadConfig(someClientAppId, someClientAppTag, someClientIp, someConfigAppId, someClusterName, defaultNamespaceName, someDataCenter,
             someNotificationMessages);
 
     verify(releaseService, times(1)).findActiveOne(grayReleaseId);
@@ -100,7 +102,7 @@ public class DefaultConfigServiceTest {
         .thenReturn(null);
 
     Release release = configService
-        .loadConfig(someClientAppId, someClientIp, someConfigAppId, someClusterName, defaultNamespaceName, someDataCenter,
+        .loadConfig(someClientAppId, someClientAppTag, someClientIp, someConfigAppId, someClusterName, defaultNamespaceName, someDataCenter,
             someNotificationMessages);
 
     assertNull(release);
@@ -112,7 +114,7 @@ public class DefaultConfigServiceTest {
         .thenReturn(someRelease);
 
     Release release = configService
-        .loadConfig(someClientAppId, someClientIp, someConfigAppId, defaultClusterName, defaultNamespaceName, someDataCenter,
+        .loadConfig(someClientAppId, someClientAppTag, someClientIp, someConfigAppId, defaultClusterName, defaultNamespaceName, someDataCenter,
             someNotificationMessages);
 
     verify(releaseService, times(1)).findLatestActiveRelease(someConfigAppId, someDataCenter, defaultNamespaceName);
@@ -128,7 +130,7 @@ public class DefaultConfigServiceTest {
         .thenReturn(someRelease);
 
     Release release = configService
-        .loadConfig(someClientAppId, someClientIp, someConfigAppId, defaultClusterName, defaultNamespaceName, someDataCenter,
+        .loadConfig(someClientAppId, someClientAppTag, someClientIp, someConfigAppId, defaultClusterName, defaultNamespaceName, someDataCenter,
             someNotificationMessages);
 
     verify(releaseService, times(1)).findLatestActiveRelease(someConfigAppId, someDataCenter, defaultNamespaceName);

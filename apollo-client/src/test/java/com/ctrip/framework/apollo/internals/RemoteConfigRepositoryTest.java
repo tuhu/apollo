@@ -316,6 +316,7 @@ public class RemoteConfigRepositoryTest {
     Gson gson = new Gson();
     String someUri = "http://someServer";
     String someAppId = "someAppId";
+    String someAppTag = "";
     String someCluster = "someCluster+ &.-_someSign";
     String someReleaseKey = "20160705193346-583078ef5716c055+20160705193308-31c471ddf9087c3f";
 
@@ -332,7 +333,7 @@ public class RemoteConfigRepositoryTest {
     when(someApolloConfig.getReleaseKey()).thenReturn(someReleaseKey);
 
     String queryConfigUrl = remoteConfigRepository
-        .assembleQueryConfigUrl(someUri, someAppId, someCluster, someNamespace, null,
+        .assembleQueryConfigUrl(someUri, someAppId, someAppTag, someCluster, someNamespace, null,
             notificationMessages,
             someApolloConfig);
 

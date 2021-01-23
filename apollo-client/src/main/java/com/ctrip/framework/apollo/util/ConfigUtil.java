@@ -70,6 +70,10 @@ public class ConfigUtil {
     }
     return appId;
   }
+  
+  public String getAppTag() {
+	  return Foundation.app().getAppTag();	  
+  }
 
   /**
    * Get the access key secret for the current application.

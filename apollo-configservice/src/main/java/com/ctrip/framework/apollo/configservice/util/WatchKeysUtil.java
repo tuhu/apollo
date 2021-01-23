@@ -1,5 +1,13 @@
 package com.ctrip.framework.apollo.configservice.util;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
+
 import com.ctrip.framework.apollo.common.entity.AppNamespace;
 import com.ctrip.framework.apollo.configservice.service.AppNamespaceServiceWithCache;
 import com.ctrip.framework.apollo.core.ConfigConsts;
@@ -8,13 +16,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Jason Song(song_s@ctrip.com)
@@ -32,9 +33,9 @@ public class WatchKeysUtil {
    * Assemble watch keys for the given appId, cluster, namespace, dataCenter combination
    */
   public Set<String> assembleAllWatchKeys(String appId, String clusterName, String namespace,
-                                          String dataCenter) {
+                                          String dataCenter, String appTag) {
     Multimap<String, String> watchedKeysMap =
-        assembleAllWatchKeys(appId, clusterName, Sets.newHashSet(namespace), dataCenter);
+        assembleAllWatchKeys(appId, clusterName, Sets.newHashSet(namespace), dataCenter, appTag);
     return Sets.newHashSet(watchedKeysMap.get(namespace));
   }
 
@@ -45,9 +46,9 @@ public class WatchKeysUtil {
    */
   public Multimap<String, String> assembleAllWatchKeys(String appId, String clusterName,
                                                        Set<String> namespaces,
-                                                       String dataCenter) {
+                                                       String dataCenter, String appTag) {
     Multimap<String, String> watchedKeysMap =
-        assembleWatchKeys(appId, clusterName, namespaces, dataCenter);
+        assembleWatchKeys(appId, clusterName, namespaces, dataCenter, appTag);
 
     //Every app has an 'application' namespace
     if (!(namespaces.size() == 1 && namespaces.contains(ConfigConsts.NAMESPACE_APPLICATION))) {
@@ -57,7 +58,7 @@ public class WatchKeysUtil {
       //Listen on more namespaces if it's a public namespace
       if (!publicNamespaces.isEmpty()) {
         watchedKeysMap
-            .putAll(findPublicConfigWatchKeys(appId, clusterName, publicNamespaces, dataCenter));
+            .putAll(findPublicConfigWatchKeys(appId, clusterName, publicNamespaces, dataCenter, appTag));
       }
     }
 
@@ -67,7 +68,8 @@ public class WatchKeysUtil {
   private Multimap<String, String> findPublicConfigWatchKeys(String applicationId,
                                                              String clusterName,
                                                              Set<String> namespaces,
-                                                             String dataCenter) {
+                                                             String dataCenter,
+                                                             String appTag) {
     Multimap<String, String> watchedKeysMap = HashMultimap.create();
     List<AppNamespace> appNamespaces = appNamespaceService.findPublicNamespacesByNames(namespaces);
 
@@ -80,7 +82,7 @@ public class WatchKeysUtil {
       String publicConfigAppId = appNamespace.getAppId();
 
       watchedKeysMap.putAll(appNamespace.getName(),
-          assembleWatchKeys(publicConfigAppId, clusterName, appNamespace.getName(), dataCenter));
+          assembleWatchKeys(publicConfigAppId, clusterName, appNamespace.getName(), dataCenter, appTag));
     }
 
     return watchedKeysMap;
@@ -91,7 +93,7 @@ public class WatchKeysUtil {
   }
 
   private Set<String> assembleWatchKeys(String appId, String clusterName, String namespace,
-                                        String dataCenter) {
+                                        String dataCenter, String appTag) {
     if (ConfigConsts.NO_APPID_PLACEHOLDER.equalsIgnoreCase(appId)) {
       return Collections.emptySet();
     }
@@ -115,12 +117,12 @@ public class WatchKeysUtil {
 
   private Multimap<String, String> assembleWatchKeys(String appId, String clusterName,
                                                      Set<String> namespaces,
-                                                     String dataCenter) {
+                                                     String dataCenter, String appTag) {
     Multimap<String, String> watchedKeysMap = HashMultimap.create();
 
     for (String namespace : namespaces) {
       watchedKeysMap
-          .putAll(namespace, assembleWatchKeys(appId, clusterName, namespace, dataCenter));
+          .putAll(namespace, assembleWatchKeys(appId, clusterName, namespace, dataCenter, appTag));
     }
 
     return watchedKeysMap;
