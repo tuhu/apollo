@@ -98,32 +98,6 @@
 		<github.global.oauth2Token>${env.GITHUB_OAUTH_TOKEN}</github.global.oauth2Token>
 	</properties>
 
-    <repositories>
-        <repository>
-            <id>nexus_public</id>
-            <url>http://nexus.tuhu.cn/nexus/content/groups/public/</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>nexus_public</id>
-            <url>http://nexus.tuhu.cn/nexus/content/groups/public/</url>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <distributionManagement>
-        <repository>
-            <id>release</id>
-            <name>release仓库</name>
-            <url>http://nexus.tuhu.cn/nexus/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>snapshots</name>
-            <url>http://nexus.tuhu.cn/nexus/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 	<modules>
 		<module>apollo-buildtools</module>
 		<module>apollo-core</module>
