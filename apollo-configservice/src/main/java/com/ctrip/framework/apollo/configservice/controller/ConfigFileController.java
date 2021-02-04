@@ -64,7 +64,7 @@ public class ConfigFileController implements ReleaseMessageListener {
       watchedKeys2CacheKey = Multimaps.synchronizedSetMultimap(HashMultimap.create());
   private final Multimap<String, String>
       cacheKey2WatchedKeys = Multimaps.synchronizedSetMultimap(HashMultimap.create());
-  private static final Gson gson = new Gson();
+  private static final Gson GSON = new Gson();
 
   private final ConfigController configController;
   private final NamespaceUtil namespaceUtil;
@@ -259,7 +259,7 @@ public class ConfigFileController implements ReleaseMessageListener {
         result = PropertiesUtil.toString(properties);
         break;
       case JSON:
-        result = gson.toJson(apolloConfig.getConfigurations());
+        result = GSON.toJson(apolloConfig.getConfigurations());
         break;
     }
 
